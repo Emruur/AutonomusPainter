@@ -1,38 +1,43 @@
-const InitType = Object.freeze({
-    PERLIN: "PERLIN",
-    RANDOM: "RANDOM",
-    HORIZONTAL: "HORIZONTAL",
-});
-
 class FlowField {
-    constructor(r) {
+    constructor(r, init_type, angle= null) {
         this.resolution = r;
-        this.cols = Math.floor(width / this.resolution);
-        this.rows = Math.floor(height / this.resolution);
+        this.cols = Math.floor(windowWidth / this.resolution);
+        this.rows = Math.floor(windowHeight / this.resolution);
         this.field = new Array(this.cols);
+        this.radius_pixel=80
         for (let i = 0; i < this.cols; i++) {
             this.field[i] = new Array(this.rows);
         }
-        this.init();
+        this.init(init_type, angle);
 
         this.previousTarget = null; // To store the previous target position (v0)
     }
 
-    init(init_type = InitType.HORIZONTAL) {
+    init(init_type, initAngle) {
         noiseSeed(random(10000));
         let xoff = 0;
         for (let i = 0; i < this.cols; i++) {
             let yoff = 0;
             for (let j = 0; j < this.rows; j++) {
                 let angle;
+                let vector
                 if (init_type === InitType.PERLIN) {
                     angle = map(noise(xoff, yoff), 0, 1, 0, TWO_PI);
                 } else if (init_type === InitType.RANDOM) {
                     angle = getRandomInt(0, 360);
-                } else {
-                    angle = 0;
+                } else if (init_type === InitType.HORIZONTAL_LR) {
+                    vector= createVector(1, 0)
                 }
-                let vector = p5.Vector.fromAngle(angle);
+                else if (init_type === InitType.VERTICAL_TD) {
+                    vector= createVector(0, 1)
+                }
+                else if (init_type === InitType.VERTICAL_DT) {
+                    vector= createVector(0, -1)
+                }
+                else if (init_type === InitType.HORIZONTAL_RL) {
+                    vector= createVector(-1, 0)
+                }
+                
                 vector.setMag(0.3);
                 this.field[i][j] = { vector: vector, identifier: 0 };
                 yoff += 0.1;
@@ -80,7 +85,13 @@ class FlowField {
         };
     }
 
-    attractToPoint(target_pos, radius_pixel = 100, identity = 1) {
+    attractToPath(path){
+        for (let point of path){
+            this.attractToPoint(point)
+        }
+    }
+
+    attractToPoint(target_pos, identity = 1) {
         if (this.previousTarget === null) {
             this.previousTarget = target_pos.copy();
             return;
@@ -95,7 +106,7 @@ class FlowField {
         }
 
         // Scale the velocity to match the radius
-        velocity.setMag(radius_pixel);
+        velocity.setMag(this.radius_pixel);
 
         // Calculate the extrapolated point at the ring
         let futureTarget = p5.Vector.add(target_pos, velocity);
@@ -103,7 +114,7 @@ class FlowField {
         let column = constrain(floor(target_pos.x / this.resolution), 0, this.cols - 1);
         let row = constrain(floor(target_pos.y / this.resolution), 0, this.rows - 1);
 
-        let radius_grid = Math.floor(radius_pixel / this.resolution);
+        let radius_grid = Math.floor(this.radius_pixel / this.resolution);
 
         for (let i = column - radius_grid; i <= column + radius_grid; i++) {
             for (let j = row - radius_grid; j <= row + radius_grid; j++) {

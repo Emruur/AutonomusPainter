@@ -30,7 +30,6 @@ class Vehicle {
         let cell = flow.lookup(this.position);
 		let desired = cell.vector;
 		let identifier = cell.identifier;
-		console.log(desired)
         desired.setMag(this.maxspeed);
         //{!3} Steering is desired minus velocity.
         let steer = p5.Vector.sub(desired, this.velocity);
@@ -40,8 +39,6 @@ class Vehicle {
     }
 
     wrapAround() {
-		this.wrapped = false; // Reset the wrapped flag
-	
 		if (this.position.x > width) {
 			this.position.x = 0;
 			this.wrapped = true; // Mark as wrapped
@@ -95,14 +92,13 @@ class Vehicle {
         steer.limit(this.maxforce);
         this.applyForce(steer);
     }
-	showTrail(){
+	showTrail(r,g,b){
 		// Draw the trail
-		fill(100, 150, 200);
+		stroke(r, g, b, 150); // Use alpha for transparency
 		noFill();
 		for (let i = 0; i < this.trail.length; i++) {
 			const segment = this.trail[i];
 			if (segment) {
-				stroke(150, 100, 250, 150);
 				strokeWeight(segment.strokeWeight);
 				beginShape();
 				vertex(segment.position.x, segment.position.y);
@@ -113,9 +109,12 @@ class Vehicle {
 			}
 		}
 	}
+	isDeactivated(){
+		return !this.strokeActive && this.hasBeenActive
+	}
 	draw(active) {
 		// Handle activation state
-		let maxTrailReached= (this.trail.length) > this.maxTrailLength
+		let maxTrailReached= (this.trail.length) >= this.maxTrailLength
 		if (active) {
 			this.strokeActive= !maxTrailReached
 			this.hasBeenActive = true;
@@ -132,14 +131,18 @@ class Vehicle {
 		
 		let strokeDead= this.currentStrokeWeight <= 0
 		let notActivatedYet= !this.strokeActive && !this.hasBeenActive
-		let strokeDeactivated= !this.strokeActive && this.hasBeenActive
+		let strokeDeactivated= this.isDeactivated()
+		
 		
 
 		// Skip drawing if stroke weight is 0 or if neither active nor in the process of dying out
 		if (strokeDead || notActivatedYet) {
-			if (strokeDeactivated)
+			if (strokeDeactivated || this.wrapped)
 				return false;
 			return true
+		}
+		if (strokeDeactivated){
+			//return false;
 		}
 	
 		// Add position to trail if not wrapped
