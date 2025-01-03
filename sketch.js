@@ -18,6 +18,22 @@ class DrawingAgent {
 
 let drawingAgents= []
 let path= []
+let palettes;
+
+function preload() {
+	// Load the palettes.json file
+	palettes = loadJSON('palettes.json', () => {
+		console.log('Palettes loaded successfully.');
+	}, (err) => {
+		console.error('Error loading palettes:', err);
+	});
+}
+function getRandomColorFromPalettes(palettes) {
+    const paletteNames = Object.keys(palettes);
+    const randomPaletteName = random(paletteNames); // p5.js random
+    const randomPalette = palettes[randomPaletteName];
+    return random(randomPalette); // Random color from the selected palette
+}
 
 
 const drawingParams = {
@@ -82,6 +98,19 @@ function setupNewAgent(){
 	drawingAgent.horizontal_lr.flowField= new FlowField(InitType.HORIZONTAL_LR, drawingParams)
 	drawingAgent.vertical_td.flowField= new FlowField(InitType.VERTICAL_TD, drawingParams)
 	drawingAgent.vertical_dt.flowField= new FlowField(InitType.VERTICAL_DT, drawingParams)
+
+	const baseColor = random(selectedPalette); // Sample one base color from the selected palette
+	const perturbation = 40; // Neighborhood range for random sampling
+
+	// Apply the same base color with perturbation to all groups
+	["horizontal_lr", "horizontal_rl", "vertical_td", "vertical_dt"].forEach((group) => {
+		for (let vehicle of drawingAgent[group].vehicles) {
+			let r = constrain(baseColor[0] + random(-perturbation, perturbation), 0, 255);
+			let g = constrain(baseColor[1] + random(-perturbation, perturbation), 0, 255);
+			let b = constrain(baseColor[2] + random(-perturbation, perturbation), 0, 255);
+			drawingAgent[group].vehicleColors.push([r, g, b]);
+		}
+	});
 	
 	drawingAgents.push(drawingAgent)
 }
@@ -89,6 +118,11 @@ function setupNewAgent(){
 
 function setup() {
 	createCanvas(windowWidth, windowHeight); // Canvas covers the entire window
+	// Sample a random palette once the sketch is loaded
+	const paletteNames = Object.keys(palettes);
+	const randomPaletteName = random(paletteNames); // Random palette from available palettes
+	selectedPalette = palettes[randomPaletteName]; // Set the selected palette
+	console.log(`Selected Palette: ${randomPaletteName}`, selectedPalette);
 	setupNewAgent()
 	background(20,50,70)
 }
@@ -97,41 +131,14 @@ function windowResized() {
 	resizeCanvas(windowWidth, windowHeight); // Adjust canvas size when window is resized
 }
 
-let palettes;
 
-function preload() {
-    // Load the palettes.json file
-    palettes = loadJSON('palettes.json', () => {
-        console.log('Palettes loaded successfully.');
-    }, (err) => {
-        console.error('Error loading palettes:', err);
-    });
-}
-function getRandomColorFromPalettes(palettes) {
-    const paletteNames = Object.keys(palettes);
-    const randomPaletteName = random(paletteNames); // p5.js random
-    const randomPalette = palettes[randomPaletteName];
-    return random(randomPalette); // Random color from the selected palette
-}
+
+
 
 function flow() {
-    if (!palettes) {
-        console.error('No palettes available. Exiting...');
-        return;
-    }
-
-    console.log(`Loaded ${Object.keys(palettes).length} palettes.`);
 
     // Example agent and vehicle setup (replace with your actual data structure)
     let drawingAgent = drawingAgents[drawingAgents.length - 1];
-
-    // Assign random colors to vehicles
-    Object.entries(drawingAgent).forEach(([key, agent]) => {
-        for (let vehicle of agent.vehicles) {
-            let [r, g, b] = getRandomColorFromPalettes(palettes);
-            agent.vehicleColors.push([r, g, b]);
-        }
-    });
 
     // Continue with the rest of your flow logic
     let prominentAngle = calculateProminentOrientation(path);
