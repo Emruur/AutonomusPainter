@@ -1,5 +1,5 @@
 class FlowField {
-    constructor(r, init_type, angle= null) {
+    constructor(r, init_type) {
         this.resolution = r;
         this.cols = Math.floor(windowWidth / this.resolution);
         this.rows = Math.floor(windowHeight / this.resolution);
@@ -8,7 +8,7 @@ class FlowField {
         for (let i = 0; i < this.cols; i++) {
             this.field[i] = new Array(this.rows);
         }
-        this.init(init_type, angle);
+        this.init(init_type);
 
         this.previousTarget = null; // To store the previous target position (v0)
     }

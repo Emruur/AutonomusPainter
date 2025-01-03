@@ -67,7 +67,7 @@ function determineClosestDirections(angle) {
 }
   
 
-function filterDrawingAgents(drawingAgents, allowedKeys) {
+function filterDrawingAgent(drawingAgents, allowedKeys) {
     // Create a new object with only the allowed keys
     let filteredAgents = {};
     for (let key of Object.keys(drawingAgents)) {
