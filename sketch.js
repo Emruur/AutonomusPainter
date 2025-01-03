@@ -25,10 +25,10 @@ const drawingParams = {
 	trackingIterations: 1000,
 	flowFieldResolution: 5, // Lower is higher resolution
 	attractionRadius: 20,
-	maxVehicleForce: 2,
-	maxVehicleSpeed: 1,
+	maxVehicleForce: 1,
+	maxVehicleSpeed: 2,
 	maxVehicleStroke: 2,
-	maxVehicleTrailLength: 20,
+	maxVehicleTrailLength: 50,
 	vehicleStrokeUp: 0.2,
 	vehicleStrokeDecay: 0.2,
   };
@@ -97,46 +97,69 @@ function windowResized() {
 	resizeCanvas(windowWidth, windowHeight); // Adjust canvas size when window is resized
 }
 
-function flow() {
-	let  drawingAgent= drawingAgents[drawingAgents.length -1]
+let palettes;
 
-	let baseR = random(255);
-	let baseG = random(255);
-	let baseB = random(255);
-
-	Object.entries(drawingAgent).forEach(([key, agent]) => {
-		for(let vehicle of agent.vehicles){
-			let perturbation = 20; // Neighborhood range for random sampling
-			let r = constrain(baseR + random(-perturbation, perturbation), 0, 255);
-			let g = constrain(baseG + random(-perturbation, perturbation), 0, 255);
-			let b = constrain(baseB + random(-perturbation, perturbation), 0, 255);
-			agent.vehicleColors.push([r,g,b])
-		}
-	});
-
-	prominentAngle= calculateProminentOrientation(path)
-	matchingAgents= determineClosestDirections(prominentAngle)
-	filteredAgent = filterDrawingAgent(drawingAgent, matchingAgents);
-	Object.entries(filteredAgent).forEach(([key, agent]) => {
-		agent.flowField.attractToPath(path)
-		for(let vehicle of agent.vehicles){
-			for(let i = 0; i< drawingParams.trackingIterations; i++){
-				identifier = vehicle.follow(agent.flowField)
-				vehicle.update()
-				wrapped= vehicle.wrapAround()
-				draw_with_vehicle= vehicle.draw(identifier > 0)
-				if (!draw_with_vehicle){
-					break
-				}
-
-			}
-		}	
-	});
-	drawingAgents[drawingAgents.length -1]= filteredAgent
-	setupNewAgent()
-	path= []
-	state= State.FLOW
+function preload() {
+    // Load the palettes.json file
+    palettes = loadJSON('palettes.json', () => {
+        console.log('Palettes loaded successfully.');
+    }, (err) => {
+        console.error('Error loading palettes:', err);
+    });
 }
+function getRandomColorFromPalettes(palettes) {
+    const paletteNames = Object.keys(palettes);
+    const randomPaletteName = random(paletteNames); // p5.js random
+    const randomPalette = palettes[randomPaletteName];
+    return random(randomPalette); // Random color from the selected palette
+}
+
+function flow() {
+    if (!palettes) {
+        console.error('No palettes available. Exiting...');
+        return;
+    }
+
+    console.log(`Loaded ${Object.keys(palettes).length} palettes.`);
+
+    // Example agent and vehicle setup (replace with your actual data structure)
+    let drawingAgent = drawingAgents[drawingAgents.length - 1];
+
+    // Assign random colors to vehicles
+    Object.entries(drawingAgent).forEach(([key, agent]) => {
+        for (let vehicle of agent.vehicles) {
+            let [r, g, b] = getRandomColorFromPalettes(palettes);
+            agent.vehicleColors.push([r, g, b]);
+        }
+    });
+
+    // Continue with the rest of your flow logic
+    let prominentAngle = calculateProminentOrientation(path);
+    let matchingAgents = determineClosestDirections(prominentAngle);
+    let filteredAgent = filterDrawingAgent(drawingAgent, matchingAgents);
+
+    Object.entries(filteredAgent).forEach(([key, agent]) => {
+        agent.flowField.attractToPath(path);
+        for (let vehicle of agent.vehicles) {
+            for (let i = 0; i < drawingParams.trackingIterations; i++) {
+                let identifier = vehicle.follow(agent.flowField);
+                vehicle.update();
+                let wrapped = vehicle.wrapAround();
+                let draw_with_vehicle = vehicle.draw(identifier > 0);
+                if (!draw_with_vehicle) {
+                    break;
+                }
+            }
+        }
+    });
+
+    // Update global state and reset for next iteration
+    drawingAgents[drawingAgents.length - 1] = filteredAgent;
+    setupNewAgent();
+    path = [];
+    state = State.FLOW;
+}
+
 
 
 function draw(){
