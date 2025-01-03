@@ -18,7 +18,7 @@ const InitType = Object.freeze({
 
 function calculateProminentOrientation(trail) {
     if (trail.length < 2) {
-      throw new Error("Trail must have at least two points to calculate orientation.");
+      return  0
     }
   
     // Initialize a vector to store the cumulative direction

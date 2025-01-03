@@ -1,20 +1,22 @@
 class Vehicle {
-    constructor(x, y) {
+    constructor(x, y, params) {
 		this.position = createVector(x, y);
 		this.velocity = createVector(0, 0);
 		this.acceleration = createVector(0, 0);
 		//{!1} Additional variable for size
 		this.r = 10.0;
 		//{!2} Arbitrary values for max speed and force; try varying these!
-		this.maxspeed = 5;
-		this.maxforce = 0.2;
+		this.maxspeed = params.maxVehicleSpeed
+		this.maxforce = params.maxVehicleForce
+        this.maxStrokeWeight = params.maxVehicleStroke
+		this.maxTrailLength= params.maxVehicleTrailLength
+		this.strokeDecay= params.vehicleStrokeDecay
+		this.strokeUp= params.vehicleStrokeUp
 
         // Variable for stroke weight animation
-        this.currentStrokeWeight = 0;
-        this.maxStrokeWeight = 10;
+        this.currentStrokeWeight = 0
         this.strokeActive = false;
         this.hasBeenActive = false;
-		this.maxTrailLength= 50;
         this.trail = []; // Initialize trail in constructor
     }
   

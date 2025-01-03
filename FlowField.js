@@ -1,10 +1,10 @@
 class FlowField {
-    constructor(r, init_type) {
-        this.resolution = r;
+    constructor(init_type, params) {
+        this.resolution = params.flowFieldResolution
         this.cols = Math.floor(windowWidth / this.resolution);
         this.rows = Math.floor(windowHeight / this.resolution);
         this.field = new Array(this.cols);
-        this.radius_pixel=80
+        this.radius_pixel=params.attractionRadius
         for (let i = 0; i < this.cols; i++) {
             this.field[i] = new Array(this.rows);
         }

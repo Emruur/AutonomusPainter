@@ -17,10 +17,21 @@ class DrawingAgent {
 }
 
 let drawingAgents= []
-let numOfVehicles= 50
 let path= []
-let trackingIterations= 1000
-let flowFieldResolution= 10
+
+
+const drawingParams = {
+	numOfVehicles: 50,
+	trackingIterations: 1000,
+	flowFieldResolution: 5, // Lower is higher resolution
+	attractionRadius: 20,
+	maxVehicleForce: 2,
+	maxVehicleSpeed: 1,
+	maxVehicleStroke: 2,
+	maxVehicleTrailLength: 20,
+	vehicleStrokeUp: 0.2,
+	vehicleStrokeDecay: 0.2,
+  };
 
 const State = Object.freeze({
     DRAW: "DRAW",
@@ -46,31 +57,31 @@ function drawPath(path) {
 
 function setupNewAgent(){
 	let drawingAgent= new DrawingAgent()
-	for(let i = 0; i< numOfVehicles; i++){
+	for(let i = 0; i< drawingParams.numOfVehicles; i++){
 		//Horizontals
-		let y= i * (windowHeight/ numOfVehicles)
+		let y= i * (windowHeight/ drawingParams.numOfVehicles)
 		let x= 10
-		drawingAgent.horizontal_lr.vehicles.push(new Vehicle(x,y))
+		drawingAgent.horizontal_lr.vehicles.push(new Vehicle(x,y, drawingParams))
 
 		//Horizontals
-		y= i * (windowHeight/ numOfVehicles)
+		y= i * (windowHeight/ drawingParams.numOfVehicles)
 		x= windowWidth -10
-		drawingAgent.horizontal_rl.vehicles.push(new Vehicle(x,y))
+		drawingAgent.horizontal_rl.vehicles.push(new Vehicle(x,y, drawingParams))
 
 		//Verticals
 		y= 10
-		x= i * (windowWidth/ numOfVehicles)
-		drawingAgent.vertical_td.vehicles.push(new Vehicle(x,y))
+		x= i * (windowWidth/ drawingParams.numOfVehicles)
+		drawingAgent.vertical_td.vehicles.push(new Vehicle(x,y, drawingParams))
 
 		//Verticals
 		y= windowHeight -10
-		x= i * (windowWidth/ numOfVehicles)
-		drawingAgent.vertical_dt.vehicles.push(new Vehicle(x,y))
+		x= i * (windowWidth/ drawingParams.numOfVehicles)
+		drawingAgent.vertical_dt.vehicles.push(new Vehicle(x,y, drawingParams))
 	}
-	drawingAgent.horizontal_rl.flowField= new FlowField(flowFieldResolution, InitType.HORIZONTAL_RL)
-	drawingAgent.horizontal_lr.flowField= new FlowField(flowFieldResolution, InitType.HORIZONTAL_LR)
-	drawingAgent.vertical_td.flowField= new FlowField(flowFieldResolution, InitType.VERTICAL_TD)
-	drawingAgent.vertical_dt.flowField= new FlowField(flowFieldResolution, InitType.VERTICAL_DT)
+	drawingAgent.horizontal_rl.flowField= new FlowField(InitType.HORIZONTAL_RL, drawingParams)
+	drawingAgent.horizontal_lr.flowField= new FlowField(InitType.HORIZONTAL_LR, drawingParams)
+	drawingAgent.vertical_td.flowField= new FlowField(InitType.VERTICAL_TD, drawingParams)
+	drawingAgent.vertical_dt.flowField= new FlowField(InitType.VERTICAL_DT, drawingParams)
 	
 	drawingAgents.push(drawingAgent)
 }
@@ -109,7 +120,7 @@ function flow() {
 	Object.entries(filteredAgent).forEach(([key, agent]) => {
 		agent.flowField.attractToPath(path)
 		for(let vehicle of agent.vehicles){
-			for(let i = 0; i< trackingIterations; i++){
+			for(let i = 0; i< drawingParams.trackingIterations; i++){
 				identifier = vehicle.follow(agent.flowField)
 				vehicle.update()
 				wrapped= vehicle.wrapAround()
