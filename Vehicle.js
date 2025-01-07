@@ -94,23 +94,25 @@ class Vehicle {
         steer.limit(this.maxforce);
         this.applyForce(steer);
     }
-	showTrail(r,g,b){
-		// Draw the trail
-		stroke(r, g, b, 150); // Use alpha for transparency
-		noFill();
+	showTrail(r, g, b, graphicsCanvas= null) {
+		const canvas = graphicsCanvas || window; // Use graphicsCanvas if provided, otherwise use the default canvas
+	  
+		canvas.stroke(r, g, b, 150); // Use alpha for transparency
+		canvas.noFill();
 		for (let i = 0; i < this.trail.length; i++) {
 			const segment = this.trail[i];
 			if (segment) {
-				strokeWeight(segment.strokeWeight);
-				beginShape();
-				vertex(segment.position.x, segment.position.y);
+				canvas.strokeWeight(segment.strokeWeight);
+				canvas.beginShape();
+				canvas.vertex(segment.position.x, segment.position.y);
 				if (i + 1 < this.trail.length && this.trail[i + 1]) {
-					vertex(this.trail[i + 1].position.x, this.trail[i + 1].position.y);
+				canvas.vertex(this.trail[i + 1].position.x, this.trail[i + 1].position.y);
 				}
-				endShape();
+				canvas.endShape();
 			}
 		}
 	}
+	  
 	isDeactivated(){
 		return !this.strokeActive && this.hasBeenActive
 	}
