@@ -6,6 +6,52 @@ class DrawingAgent {
 	  this.vertical_td = new AgentGroup();
 	  this.vertical_dt = new AgentGroup();
 	}
+
+	setVehicles(){
+		this.horizontal_lr.vehicles = []
+		this.horizontal_rl.vehicles = []
+		this.vertical_td.vehicles = []
+		this.vertical_dt.vehicles = []
+		for(let i = 0; i< drawingParams.numOfVehicles; i++){
+			//Horizontals
+			let y= i * (windowHeight/ drawingParams.numOfVehicles)
+			let x= 10
+			this.horizontal_lr.vehicles.push(new Vehicle(x,y, drawingParams))
+	
+			//Horizontals
+			y= i * (windowHeight/ drawingParams.numOfVehicles)
+			x= windowWidth -10
+			this.horizontal_rl.vehicles.push(new Vehicle(x,y, drawingParams))
+	
+			//Verticals
+			y= 10
+			x= i * (windowWidth/ drawingParams.numOfVehicles)
+			this.vertical_td.vehicles.push(new Vehicle(x,y, drawingParams))
+	
+			//Verticals
+			y= windowHeight -10
+			x= i * (windowWidth/ drawingParams.numOfVehicles)
+			this.vertical_dt.vehicles.push(new Vehicle(x,y, drawingParams))
+		}
+	}
+
+	flow(){
+		Object.entries(this).forEach(([key, agent]) => {
+			agent.flow()
+		});
+	}
+
+	show(){
+		Object.entries(this).forEach(([key, agent]) => {
+			for (let i = 0; i < agent.vehicles.length; i++) {
+				const vehicle = agent.vehicles[i];
+				const color = agent.vehicleColors[i]; // Assuming this array has the same length as vehicles
+			
+				// Use color[0], color[1], color[2] as r, g, b respectively
+				vehicle.showTrail(color[0], color[1], color[2]);
+			}
+		});
+	}
   }
   
   class AgentGroup {
@@ -13,6 +59,19 @@ class DrawingAgent {
 	  this.vehicles = [];
 	  this.flowField = null;
 	  this.vehicleColors = [];
+	}
+
+	flow(){
+		
+		for (let vehicle of this.vehicles) {
+			let identifier = vehicle.follow(this.flowField);
+			vehicle.update();
+			vehicle.wrapAround();
+			let draw_with_vehicle = vehicle.draw(identifier > 0);
+			if (!draw_with_vehicle) {
+				break;
+			}
+        }
 	}
 }
 
@@ -71,29 +130,20 @@ function drawPath(path) {
 	endShape();
 }
 
+function keyPressed() {
+	if (key === 'f' || key === 'F') { // Check for both lowercase and uppercase 'F'
+		state= State.FLOW
+		for (let agent of drawingAgents.slice(0, -1)){
+			console.log(1, agent)
+			agent.setVehicles()
+		}
+
+	}
+}
+
 function setupNewAgent(){
 	let drawingAgent= new DrawingAgent()
-	for(let i = 0; i< drawingParams.numOfVehicles; i++){
-		//Horizontals
-		let y= i * (windowHeight/ drawingParams.numOfVehicles)
-		let x= 10
-		drawingAgent.horizontal_lr.vehicles.push(new Vehicle(x,y, drawingParams))
-
-		//Horizontals
-		y= i * (windowHeight/ drawingParams.numOfVehicles)
-		x= windowWidth -10
-		drawingAgent.horizontal_rl.vehicles.push(new Vehicle(x,y, drawingParams))
-
-		//Verticals
-		y= 10
-		x= i * (windowWidth/ drawingParams.numOfVehicles)
-		drawingAgent.vertical_td.vehicles.push(new Vehicle(x,y, drawingParams))
-
-		//Verticals
-		y= windowHeight -10
-		x= i * (windowWidth/ drawingParams.numOfVehicles)
-		drawingAgent.vertical_dt.vehicles.push(new Vehicle(x,y, drawingParams))
-	}
+	drawingAgent.setVehicles()
 	drawingAgent.horizontal_rl.flowField= new FlowField(InitType.HORIZONTAL_RL, drawingParams)
 	drawingAgent.horizontal_lr.flowField= new FlowField(InitType.HORIZONTAL_LR, drawingParams)
 	drawingAgent.vertical_td.flowField= new FlowField(InitType.VERTICAL_TD, drawingParams)
@@ -135,7 +185,7 @@ function windowResized() {
 
 
 
-function flow() {
+function drawWithAgent() {
 
     // Example agent and vehicle setup (replace with your actual data structure)
     let drawingAgent = drawingAgents[drawingAgents.length - 1];
@@ -143,7 +193,8 @@ function flow() {
     // Continue with the rest of your flow logic
     let prominentAngle = calculateProminentOrientation(path);
     let matchingAgents = determineClosestDirections(prominentAngle);
-    let filteredAgent = filterDrawingAgent(drawingAgent, matchingAgents);
+    //let filteredAgent = filterDrawingAgent(drawingAgent, matchingAgents);
+	let filteredAgent= drawingAgent
 
     Object.entries(filteredAgent).forEach(([key, agent]) => {
         agent.flowField.attractToPath(path);
@@ -164,7 +215,6 @@ function flow() {
     drawingAgents[drawingAgents.length - 1] = filteredAgent;
     setupNewAgent();
     path = [];
-    state = State.FLOW;
 }
 
 
@@ -172,25 +222,27 @@ function flow() {
 function draw(){
 	background(10,20,30);
 
-	if (mouseIsPressed) {
-		state= State.DRAWING
-		path.push(createVector(mouseX,mouseY))	
-	}
-	else if(state === State.DRAWING && !mouseIsPressed){
-		flow()
-	}
-	
+	if (state !== State.FLOW){
+		if (mouseIsPressed) {
+			state= State.DRAWING
+			path.push(createVector(mouseX,mouseY))	
+		}
+		else if(state === State.DRAWING && !mouseIsPressed){
+			drawWithAgent()
+			state= State.DRAW
+		}
+		
 
-	drawPath(path)
-	for(let drawingAgent of drawingAgents.slice(0, -1)){ // Exclude the last element)
-		Object.entries(drawingAgent).forEach(([key, agent]) => {
-			for (let i = 0; i < agent.vehicles.length; i++) {
-				const vehicle = agent.vehicles[i];
-				const color = agent.vehicleColors[i]; // Assuming this array has the same length as vehicles
-			
-				// Use color[0], color[1], color[2] as r, g, b respectively
-				vehicle.showTrail(color[0], color[1], color[2]);
-			}
-		});
+		drawPath(path)
+		for(let drawingAgent of drawingAgents.slice(0, -1)){ // Exclude the last element)
+			drawingAgent.show()
+		}
+	}
+
+	if(state === State.FLOW){
+		for( let agent of drawingAgents){
+			agent.flow()
+			agent.show()
+		}
 	}
 }
