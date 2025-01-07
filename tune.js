@@ -1,10 +1,30 @@
 let drawings = []; // Array to hold images of drawings
 const gridRows = 3; // Number of rows in the grid
-const gridCols = 3; // Number of columns in the grid
+const gridCols = 4; // Number of columns in the grid
 let cellWidth, cellHeight;
 
 let path= []
 let paths= []
+
+let selectedCells = []
+let maxSelections = 3
+
+let currentDrawingParams= []
+let parentDrawingParams= []
+
+const paramRanges = {
+	numOfVehicles: { min: 1, max: 300 },
+	trackingIterations: { min: 100, max: 1500 },
+	flowFieldResolution: { min: 2, max: 200 },
+	attractionRadius: { min: 5, max: 100 },
+	maxVehicleForce: { min: 0.2, max: 5 },
+	maxVehicleSpeed: { min: 1, max: 10 },
+	maxVehicleStroke: { min: 1, max: 10 },
+	maxVehicleTrailLength: { min: 10, max: 200 },
+	vehicleStrokeUp: { min: 0.01, max: 2 },
+	vehicleStrokeDecay: { min: 0.01, max: 2 },
+};
+
 
 const State = Object.freeze({
     DRAW: "DRAW",
@@ -26,13 +46,14 @@ function setup() {
 function drawSpinner() {
 	push();
 	translate(width / 2, height / 2);
+	rotate(frameCount * 0.1); // Smooth rotation based on frameCount
 	noFill();
 	stroke(255);
 	strokeWeight(4);
-	let angle = frameCount * 0.1;
-	arc(0, 0, 50, 50, angle, angle + PI * 1.5);
+	arc(0, 0, 50, 50, 0, PI * 1.5); // Draw a rotating arc
 	pop();
-  }
+}
+  
 
 function drawPaths() {
 	
@@ -54,47 +75,133 @@ function drawPaths() {
 
 function keyPressed() {
 	if (key === 'f' || key === 'F') { // Check for both lowercase and uppercase 'F'
-		state= State.GRID
 		renderDrawings()
-		console.log("finito")
 	}
 }
 
+
+function mousePressed() {
+	if (state === State.GRID) {
+		let index = 0;
+
+		for (let row = 0; row < gridRows; row++) {
+		for (let col = 0; col < gridCols; col++) {
+			let x = col * cellWidth;
+			let y = row * cellHeight;
+
+			// Check if mouse is inside the cell
+			if (
+			mouseX > x &&
+			mouseX < x + cellWidth &&
+			mouseY > y &&
+			mouseY < y + cellHeight
+			) {
+			const existingIndex = selectedCells.findIndex(
+				(cell) => cell.index === index
+			);
+
+			if (existingIndex !== -1) {
+				// If already selected, deselect the cell
+				selectedCells.splice(existingIndex, 1);
+			} else {
+				// Add the cell to the selected list (respect maxSelections limit)
+				if (selectedCells.length < maxSelections) {
+				selectedCells.push({ index: index });
+				}
+			}
+			break;
+			}
+
+			index++;
+		}
+		}
+	}
+}
+  
+  
+
 function draw() {
 	background(20, 20, 40);
-  
+
 	if (state === State.LOADING) {
-	  drawSpinner(); // Display the spinner while loading
-	  return;
+		drawSpinner();
+		return;
 	}
-  
+
 	if (state === State.DRAW || state === State.DRAWING) {
-	  drawPaths();
-	  if (mouseIsPressed) {
+		drawPaths();
+
+		if (mouseIsPressed) {
 		state = State.DRAWING;
 		path.push(createVector(mouseX, mouseY));
-	  } else if (state === State.DRAWING && !mouseIsPressed) {
+		} else if (state === State.DRAWING && !mouseIsPressed) {
 		paths.push(path);
 		path = [];
 		state = State.DRAW;
-	  }
+		}
 	}
-  
+
 	if (state === State.GRID) {
-	  let index = 0;
-	  for (let row = 0; row < gridRows; row++) {
+		if(selectedCells.length == maxSelections){
+			parentDrawingParams= []
+			for(let selectionIndex of selectedCells){
+				selectionIndex= selectionIndex.index
+				currParams= currentDrawingParams[selectionIndex]
+				parentDrawingParams.push(currParams)
+			}
+			selectedCells= []
+			evolveDrawingParams()
+			renderDrawings()
+		}
+		let index = 0;
+
+		for (let row = 0; row < gridRows; row++) {
 		for (let col = 0; col < gridCols; col++) {
-		  if (index < drawings.length) {
+			if (index < drawings.length) {
 			let x = col * cellWidth;
 			let y = row * cellHeight;
-			image(drawings[index], x, y, cellWidth, cellHeight); // Display the saved image
+
+			// Display the image
+			image(drawings[index], x, y, cellWidth, cellHeight);
+
+			// Highlight the hovered cell
+			if (
+				mouseX > x &&
+				mouseX < x + cellWidth &&
+				mouseY > y &&
+				mouseY < y + cellHeight
+			) {
+				noFill();
+				stroke(255, 255, 0); // Yellow border for hover
+				strokeWeight(4);
+				rect(x, y, cellWidth, cellHeight);
+			}
+
+			// Draw persistent border and selection order as a fraction
+			const selectionIndex = selectedCells.findIndex(
+				(cell) => cell.index === index
+			);
+
+			if (selectionIndex !== -1) {
+				noFill();
+				stroke(0, 255, 0); // Green border for selected
+				strokeWeight(4);
+				rect(x, y, cellWidth, cellHeight);
+
+				// Display the fraction (e.g., "1/3", "2/3")
+				fill(255); // White color for text
+				noStroke();
+				textSize(16);
+				textAlign(RIGHT, TOP);
+				text(`${selectionIndex + 1}/${maxSelections}`, x + cellWidth - 5, y + 5); // Top-right corner
+			}
+
 			index++;
-		  }
+			}
 		}
-	  }
+		}
 	}
-  }
-  
+}
 
 async function renderDrawings() {
 	state = State.LOADING; // Set state to LOADING to show the spinner
@@ -102,27 +209,32 @@ async function renderDrawings() {
 	drawings = []; // Clear the previous drawings array
   
 	for (let i = 0; i < gridRows * gridCols; i++) {
-	  const drawingParams = generateRandomParams();
-	  let graphicsCanvas = createGraphics(windowWidth, windowHeight);
-  
-	  // Render the drawing on the off-screen canvas
-	  await new Promise((resolve) => {
-		setTimeout(() => {
-		  renderDrawing(graphicsCanvas, drawingParams);
-		  resolve();
-		}, 0); // Non-blocking execution
-	  });
-  
-	  // Save the rendered canvas as an image
-	  let img = graphicsCanvas.get();
-	  img.resize(cellWidth, cellHeight);
-	  drawings.push(img);
+		let drawingParams
+		if (currentDrawingParams.length < gridCols*gridRows)
+			drawingParams = generateRandomParams();
+		else
+			drawingParams= currentDrawingParams[i]
+
+		currentDrawingParams.push(drawingParams)
+		let graphicsCanvas = createGraphics(windowWidth, windowHeight);
+	
+		// Render the drawing on the off-screen canvas
+		await new Promise((resolve) => {
+			setTimeout(() => {
+			renderDrawing(graphicsCanvas, drawingParams);
+			resolve();
+			}, 0); // Non-blocking execution
+		});
+	
+		// Save the rendered canvas as an image
+		let img = graphicsCanvas.get();
+		img.resize(cellWidth, cellHeight);
+		drawings.push(img);
 	}
   
 	state = State.GRID; // Switch to the GRID state after rendering
-  }
+}
   
-
 function renderDrawing(graphicsCanvas, drawingParams) {
 	graphicsCanvas.background(10, 20, 30);
 
@@ -157,16 +269,66 @@ function renderDrawing(graphicsCanvas, drawingParams) {
 }
 
 function generateRandomParams() {
-	return {
-		numOfVehicles: int(random(10, 100)),
-		trackingIterations: int(random(500, 1500)),
-		flowFieldResolution: int(random(3, 10)),
-		attractionRadius: random(10, 30),
-		maxVehicleForce: random(0.5, 3),
-		maxVehicleSpeed: random(1, 5),
-		maxVehicleStroke: random(1, 5),
-		maxVehicleTrailLength: int(random(30, 100)),
-		vehicleStrokeUp: random(0.1, 0.5),
-		vehicleStrokeDecay: random(0.1, 0.5),
-	};
+	const params = {};
+	for (let key in paramRanges) {
+		const range = paramRanges[key];
+		params[key] = random(range.min, range.max);
+		if (Number.isInteger(range.min) && Number.isInteger(range.max)) {
+		params[key] = int(params[key]); // Ensure integers for specific parameters
+		}
+	}
+	return params;
 }
+  
+
+//ES
+
+function mutate(params) {
+	const mutated = { ...params };
+	for (let key in mutated) {
+		if (random() < 0.1) { // 10% chance to mutate this parameter
+		const range = paramRanges[key];
+		const mutationAmount = (range.max - range.min) * 0.1; // 10% of the range
+		mutated[key] += random(-mutationAmount, mutationAmount);
+
+		// Clamp the value to the defined range
+		mutated[key] = constrain(mutated[key], range.min, range.max);
+
+		// Ensure integers for specific parameters
+		if (Number.isInteger(range.min) && Number.isInteger(range.max)) {
+			mutated[key] = int(mutated[key]);
+		}
+		}
+	}
+	return mutated;
+}
+  
+function evolveDrawingParams() {
+	state = State.LOADING
+	currentDrawingParams= []
+	const totalParams = gridRows * gridCols;
+
+	// Helper function: Perform crossover between two parent objects
+	function crossover(parentA, parentB) {
+		const child = {};
+		for (let key in parentA) {
+		// Randomly inherit from either parent
+		child[key] = random([parentA[key], parentB[key]]);
+		}
+		return child;
+	}
+
+	// Generate new parameters
+	for (let i = 0; i < totalParams; i++) {
+		// Randomly select two parents for crossover
+		const parentA = random(parentDrawingParams);
+		const parentB = random(parentDrawingParams);
+
+		// Perform crossover and mutation
+		const child = mutate(crossover(parentA, parentB));
+
+		currentDrawingParams.push(child);
+	}
+
+}
+  
