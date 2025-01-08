@@ -10,6 +10,8 @@
 		<script src="FlowField.js"></script>
 		<script src="Vehicle.js"></script>
 		<script src="DrawingAgents.js"></script>
+		<script src="sketchBar.js"></script>
+
 		<script src="sketch.js"></script>
 		<style>
 			body {
@@ -19,7 +21,49 @@
 			canvas {
 				margin: auto;
 			}
+
+			.bar{
+				height: 4rem;
+				background-color: rgb(44, 44, 44);
+				display: flex;
+				justify-content: space-around;
+				align-items: center;
+			}
+
+			button {
+				background-color: #333; /* Dark background */
+				color: #fff; /* White text */
+				padding: 10px 20px;
+				font-size: 16px;
+				font-weight: bold;
+				border: 2px solid #555;
+				border-radius: 8px;
+				cursor: pointer;
+				transition: all 0.3s ease; /* Smooth transition */
+				margin-inline: 1rem;
+			}
+
+			button:hover {
+				background-color: #555; /* Slightly lighter dark background */
+				color: #ff9800; /* Highlighted text color */
+				border-color: #ff9800; /* Highlighted border */
+				transform: scale(1.05); /* Slight zoom effect */
+			}
+
 		</style>
 	</head>
-	<body></body>
-</html>
+	<body>
+
+		<div class="bar">
+			<div class="color-bar">
+
+			</div>
+			<div class="brush-bar">
+				<button>a</button>
+				<button>a</button>
+				<button>a</button>
+			</div>
+		</div>
+	</body>
+</html> 
+

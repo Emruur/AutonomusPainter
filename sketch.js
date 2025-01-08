@@ -1,8 +1,7 @@
-
-
 let drawingAgents= []
 let path= []
 let palettes;
+let currColor;
 
 function preload() {
 	// Load the palettes.json file
@@ -60,7 +59,7 @@ function keyPressed() {
 		state= State.FLOW
 		for (let agent of drawingAgents.slice(0, -1)){
 			console.log(1, agent)
-			agent.setVehicles()
+			agent.setVehicles(drawingParams)
 		}
 
 	}
@@ -68,13 +67,18 @@ function keyPressed() {
 
 function setupNewAgent(){
 	let drawingAgent= new DrawingAgent()
-	drawingAgent.setVehicles()
+	drawingAgent.setVehicles(drawingParams)
 	drawingAgent.horizontal_rl.flowField= new FlowField(InitType.HORIZONTAL_RL, drawingParams)
 	drawingAgent.horizontal_lr.flowField= new FlowField(InitType.HORIZONTAL_LR, drawingParams)
 	drawingAgent.vertical_td.flowField= new FlowField(InitType.VERTICAL_TD, drawingParams)
 	drawingAgent.vertical_dt.flowField= new FlowField(InitType.VERTICAL_DT, drawingParams)
 
-	const baseColor = random(selectedPalette); // Sample one base color from the selected palette
+
+	let baseColor;
+	if (currColor== null)
+		baseColor = random(selectedPalette); // Sample one base color from the selected palette
+	else
+		baseColor= currColor
 	const perturbation = 40; // Neighborhood range for random sampling
 
 	// Apply the same base color with perturbation to all groups
@@ -100,6 +104,8 @@ function setup() {
 	console.log(`Selected Palette: ${randomPaletteName}`, selectedPalette);
 	setupNewAgent()
 	background(20,50,70)
+
+	createColorBar();
 }
   
 function windowResized() {
@@ -156,4 +162,33 @@ function draw(){
 			agent.show()
 		}
 	}
+}
+
+
+/// GUI
+
+function createColorBar() {
+	const colorBar = document.querySelector('.color-bar');
+	colorBar.innerHTML = ''; // Clear existing buttons
+
+	if (!selectedPalette || selectedPalette.length === 0) {
+		console.error('No palette selected or palette is empty.');
+		return;
+	}
+
+	selectedPalette.forEach((color) => {
+		// Create a button for each color in the palette
+		const button = document.createElement('button');
+		button.style.backgroundColor = `rgb(${color[0]}, ${color[1]}, ${color[2]})`; // Set button background color
+		button.title = `RGB(${color[0]}, ${color[1]}, ${color[2]})`; // Tooltip for the color
+
+		// Add an event listener to log the color when clicked
+		button.addEventListener('click', () => {
+			console.log(`Selected Color: rgb(${color[0]}, ${color[1]}, ${color[2]})`);
+			currColor= color
+		});
+
+		// Append the button to the color bar
+		colorBar.appendChild(button);
+	});
 }
