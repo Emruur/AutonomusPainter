@@ -135,12 +135,12 @@ function setupNewAgent(){
 
 function setup() {
 	canvas = createCanvas(windowWidth, windowHeight);
+	background(20,50,70)
 	// Sample a random palette once the sketch is loaded
 	const paletteNames = Object.keys(palettes);
 	const randomPaletteName = random(paletteNames); // Random palette from available palettes
 	selectedPalette = palettes[randomPaletteName]; // Set the selected palette
 	console.log(`Selected Palette: ${randomPaletteName}`, selectedPalette);
-	background(20,50,70)
 
 	//GUI Setup
 	createColorBar();
