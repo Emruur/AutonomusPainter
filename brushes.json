@@ -1,0 +1,17 @@
+{
+    "creative":{
+        "bigBoxy_1":{"numOfVehicles":47,"trackingIterations":1082,"flowFieldResolution":187,"attractionRadius":85,"maxVehicleForce":4.9343070630350025,"maxVehicleSpeed":4,"maxVehicleStroke":5,"maxVehicleTrailLength":197,"vehicleStrokeUp":0.1419474695784608,"vehicleStrokeDecay":0.5313998899156757,"filteredOrientations":2},
+        "patchy_1":{"numOfVehicles":82,"trackingIterations":1124,"flowFieldResolution":78,"attractionRadius":78,"maxVehicleForce":4.330235559986636,"maxVehicleSpeed":1,"maxVehicleStroke":2,"maxVehicleTrailLength":192,"vehicleStrokeUp":2,"vehicleStrokeDecay":0.9393737548042977,"filteredOrientations":2}
+    },
+
+    "viby":{
+        "smallSpikes_1": {"numOfVehicles":40,"trackingIterations":1186,"flowFieldResolution":10,"attractionRadius":54,"maxVehicleForce":4.4951722991398695,"maxVehicleSpeed":1,"maxVehicleStroke":4,"maxVehicleTrailLength":63,"vehicleStrokeUp":0.7126300143056533,"vehicleStrokeDecay":1.588632584679453,"filteredOrientations":2},
+        "mediumSpikes_1": {"numOfVehicles":27,"trackingIterations":634,"flowFieldResolution":49,"attractionRadius":83,"maxVehicleForce":1.443235696082549,"maxVehicleSpeed":3,"maxVehicleStroke":5,"maxVehicleTrailLength":184,"vehicleStrokeUp":1.7563010751591592,"vehicleStrokeDecay":0.8513749106213565,"filteredOrientations":2}
+    }
+        
+    ,
+    "precise":{
+        "fuzzy_1": {"numOfVehicles":221,"trackingIterations":550,"flowFieldResolution":3,"attractionRadius":40,"maxVehicleForce":2.8030278683235674,"maxVehicleSpeed":5,"maxVehicleStroke":3,"maxVehicleTrailLength":148,"vehicleStrokeUp":0.2505257897648397,"vehicleStrokeDecay":1.3337325417615034,"filteredOrientations":1},
+        "straight_1":{"numOfVehicles":268,"trackingIterations":544,"flowFieldResolution":8,"attractionRadius":20,"maxVehicleForce":1.8765728441639693,"maxVehicleSpeed":4,"maxVehicleStroke":5,"maxVehicleTrailLength":161,"vehicleStrokeUp":1.1130120382145992,"vehicleStrokeDecay":0.5449237427268566,"filteredOrientations":2}
+    }
+}

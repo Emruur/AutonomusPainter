@@ -23,6 +23,7 @@ const paramRanges = {
 	maxVehicleTrailLength: { min: 10, max: 200 },
 	vehicleStrokeUp: { min: 0.01, max: 2 },
 	vehicleStrokeDecay: { min: 0.01, max: 2 },
+	filteredOrientations: {min:1, max: 3},
 };
 
 
@@ -72,13 +73,31 @@ function drawPaths() {
 	}
 	
 }
-
 function keyPressed() {
-	if (key === 'f' || key === 'F') { // Check for both lowercase and uppercase 'F'
-		renderDrawings()
-	}
-}
+    if (key === 'f' || key === 'F') {
+        renderDrawings();
+    }
 
+    if (key === 's' || key === 'S') {
+        for (let selectionIndex of selectedCells) {
+            selectionIndex = selectionIndex.index;
+            let currParams = currentDrawingParams[selectionIndex];
+            
+            // Log the raw compact JSON string
+            const rawJSON = JSON.stringify(currParams); // Compact JSON
+            console.log(rawJSON);
+
+            // Render the drawing for the logged params
+            let tempCanvas = createGraphics(windowWidth, windowHeight);
+            renderDrawing(tempCanvas, currParams);
+
+            // Save the rendered drawing as an image
+            const imageFilename = `rendered_drawing_${selectionIndex}.png`;
+            tempCanvas.save(imageFilename);
+
+        }
+    }
+}
 
 function mousePressed() {
 	if (state === State.GRID) {
@@ -238,19 +257,31 @@ async function renderDrawings() {
 function renderDrawing(graphicsCanvas, drawingParams) {
 	graphicsCanvas.background(10, 20, 30);
 
-	for(let path of paths){
-		let drawingAgent= new DrawingAgent()
-		drawingAgent.setVehicles(drawingParams)
-		drawingAgent.horizontal_rl.flowField= new FlowField(InitType.HORIZONTAL_RL, drawingParams)
-		drawingAgent.horizontal_lr.flowField= new FlowField(InitType.HORIZONTAL_LR, drawingParams)
-		drawingAgent.vertical_td.flowField= new FlowField(InitType.VERTICAL_TD, drawingParams)
-		drawingAgent.vertical_dt.flowField= new FlowField(InitType.VERTICAL_DT, drawingParams)
+	for (let path of paths) {
+		let drawingAgent = new DrawingAgent(drawingParams);
+		drawingAgent.setVehicles();
 
-		const baseColor = [120,120,120]; // Sample one base color from the selected palette
-		const perturbation = 40; // Neighborhood range for random sampling
+		// Initialize flow fields for all orientations
+		drawingAgent.horizontal_rl.flowField = new FlowField(InitType.HORIZONTAL_RL, drawingParams);
+		drawingAgent.horizontal_lr.flowField = new FlowField(InitType.HORIZONTAL_LR, drawingParams);
+		drawingAgent.vertical_td.flowField = new FlowField(InitType.VERTICAL_TD, drawingParams);
+		drawingAgent.vertical_dt.flowField = new FlowField(InitType.VERTICAL_DT, drawingParams);
 
-		// Apply the same base color with perturbation to all groups
-		["horizontal_lr", "horizontal_rl", "vertical_td", "vertical_dt"].forEach((group) => {
+		// Calculate prominent angle for the path
+		let prominentAngle = calculateProminentOrientation(path);
+
+		// Get matching agents based on the prominent angle
+		let matchingAgents = new Set(determineClosestDirections(prominentAngle, drawingParams.filteredOrientations));
+
+
+		// Filter the drawing agent to retain only matching orientations
+		drawingAgent = filterDrawingAgent(drawingAgent, matchingAgents);
+
+		const baseColor = [120, 120, 120]; // Base color from palette
+		const perturbation = 40; // Color perturbation range
+
+		// Iterate through the filtered orientations and assign colors
+		matchingAgents.forEach((group) => {
 			for (let vehicle of drawingAgent[group].vehicles) {
 				let r = constrain(baseColor[0] + random(-perturbation, perturbation), 0, 255);
 				let g = constrain(baseColor[1] + random(-perturbation, perturbation), 0, 255);
@@ -258,15 +289,20 @@ function renderDrawing(graphicsCanvas, drawingParams) {
 				drawingAgent[group].vehicleColors.push([r, g, b]);
 			}
 		});
-	
-		drawingAgent.attractFieldToPath(path)
-		for (let i = 0; i < drawingParams.trackingIterations; i++) {
-			drawingAgent.flow()
-		}
-		drawingAgent.show(graphicsCanvas)
-	}
 
+		// Attract the field to the path
+		drawingAgent.attractFieldToPath(path);
+
+		// Perform the flow for the specified number of tracking iterations
+		for (let i = 0; i < drawingParams.trackingIterations; i++) {
+			drawingAgent.flow();
+		}
+
+		// Render the drawing agent on the canvas
+		drawingAgent.show(graphicsCanvas);
+	}
 }
+
 
 function generateRandomParams() {
 	const params = {};
@@ -288,7 +324,7 @@ function mutate(params) {
 	for (let key in mutated) {
 		if (random() < 0.1) { // 10% chance to mutate this parameter
 		const range = paramRanges[key];
-		const mutationAmount = (range.max - range.min) * 0.1; // 10% of the range
+		const mutationAmount = (range.max - range.min) * 0.2; // 10% of the range
 		mutated[key] += random(-mutationAmount, mutationAmount);
 
 		// Clamp the value to the defined range

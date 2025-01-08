@@ -1,38 +1,55 @@
 class DrawingAgent {
-	constructor() {
-	  this.horizontal_lr = new AgentGroup();
-	  this.horizontal_rl = new AgentGroup();
-	  this.vertical_td = new AgentGroup();
-	  this.vertical_dt = new AgentGroup();
+	constructor(selfParams) {
+	  this.horizontal_lr = new AgentGroup(selfParams);
+	  this.horizontal_rl = new AgentGroup(selfParams);
+	  this.vertical_td = new AgentGroup(selfParams);
+	  this.vertical_dt = new AgentGroup(selfParams);
 	}
 
-	setVehicles(drawingParams){
-		this.horizontal_lr.vehicles = []
-		this.horizontal_rl.vehicles = []
-		this.vertical_td.vehicles = []
-		this.vertical_dt.vehicles = []
-		for(let i = 0; i< drawingParams.numOfVehicles; i++){
-			//Horizontals
-			let y= i * (windowHeight/ drawingParams.numOfVehicles)
-			let x= 10
-			this.horizontal_lr.vehicles.push(new Vehicle(x,y, drawingParams))
+	setVehicles(){
+		console.log
+		// Check if each group exists before initializing vehicles
+		if (this.horizontal_lr) {
+			this.horizontal_lr.vehicles = [];
+			let params= this.horizontal_lr.params
+			for (let i = 0; i < params.numOfVehicles; i++) {
+				let y = i * (windowHeight / params.numOfVehicles);
+				let x = 10;
+				this.horizontal_lr.vehicles.push(new Vehicle(x, y, params));
+			}
+		}
 	
-			//Horizontals
-			y= i * (windowHeight/ drawingParams.numOfVehicles)
-			x= windowWidth -10
-			this.horizontal_rl.vehicles.push(new Vehicle(x,y, drawingParams))
+		if (this.horizontal_rl) {
+			this.horizontal_rl.vehicles = [];
+			let params= this.horizontal_rl.params
+			for (let i = 0; i < params.numOfVehicles; i++) {
+				let y = i * (windowHeight / params.numOfVehicles);
+				let x = windowWidth - 10;
+				this.horizontal_rl.vehicles.push(new Vehicle(x, y, params));
+			}
+		}
 	
-			//Verticals
-			y= 10
-			x= i * (windowWidth/ drawingParams.numOfVehicles)
-			this.vertical_td.vehicles.push(new Vehicle(x,y, drawingParams))
+		if (this.vertical_td) {
+			this.vertical_td.vehicles = [];
+			let params= this.vertical_td.params
+			for (let i = 0; i < params.numOfVehicles; i++) {
+				let y = 10;
+				let x = i * (windowWidth / params.numOfVehicles);
+				this.vertical_td.vehicles.push(new Vehicle(x, y, params));
+			}
+		}
 	
-			//Verticals
-			y= windowHeight -10
-			x= i * (windowWidth/ drawingParams.numOfVehicles)
-			this.vertical_dt.vehicles.push(new Vehicle(x,y, drawingParams))
+		if (this.vertical_dt) {
+			this.vertical_dt.vehicles = [];
+			let params= this.vertical_dt.params
+			for (let i = 0; i < params.numOfVehicles; i++) {
+				let y = windowHeight - 10;
+				let x = i * (windowWidth / params.numOfVehicles);
+				this.vertical_dt.vehicles.push(new Vehicle(x, y, params));
+			}
 		}
 	}
+	
 
 	flow(){
 		Object.entries(this).forEach(([key, agent]) => {
@@ -60,10 +77,11 @@ class DrawingAgent {
   }
   
   class AgentGroup {
-	constructor() {
+	constructor(selfParams) {
 	  this.vehicles = [];
 	  this.flowField = null;
 	  this.vehicleColors = [];
+	  this.params= selfParams
 	}
 
 	flow(){
