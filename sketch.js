@@ -1,6 +1,11 @@
+//FIXME caching problem when loading
+//FIXME SLow on chrome ok on safari
+
 
 let projectData = {
-    paths: [] // This will hold the paths with their base colors and drawing parameters
+    paths: [], // Array to store paths, base colors, and drawing parameters
+    palette: null, // The latest palette in use
+    brushes: {} // Selected brushes for each category (e.g., { viby: ..., creative: ..., precise: ... })
 };
 
 let canvas; // Declare a global variable for the canvas
@@ -103,7 +108,7 @@ function isMousePressed() {
 		return false;
 	}
 
-	return mouseIsPressed && !isHoveringBar
+	return mouseIsPressed && !isHoveringBar && !isHoveringUIElement()
 }
 
 
@@ -135,7 +140,7 @@ function setupNewAgent(existingColors = null){
 	
 	
 	drawingAgents.push(drawingAgent)
-	
+
 	projectData.paths.push({
 		path: path.map((p) => ({ x: p.x, y: p.y })), // Convert vectors to plain {x, y} objects
 		baseColor: baseColor, // Base color is an array and works fine as is
@@ -185,10 +190,6 @@ function setup() {
 	downloadButton.addEventListener("click", download)
 	uploadButton.addEventListener("click", upload)
 }
-  
-function windowResized() {
-	resizeCanvas(windowWidth, windowHeight); // Adjust canvas size when window is resized
-}
 
 function drawWithAgent() {
 
@@ -208,9 +209,8 @@ function draw(){
 	background(10,20,30);
 
 	if (state !== State.FLOW){
-
 		if (isMousePressed()) {
-
+			console.log("AAA")
 			state= State.DRAWING
 			path.push(createVector(mouseX,mouseY))	
 		}
@@ -464,6 +464,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 function download() {
+
+	projectData.palette = selectedPalette; // Save the current palette
+    projectData.brushes = { ...selectedBrushes }; // Save the selected brushes
+
     // Prepare the JSON object
     const dataStr = JSON.stringify(projectData, null, 2); // Pretty-print JSON
     const blob = new Blob([dataStr], { type: "application/json" });
@@ -516,10 +520,28 @@ function upload() {
 function recreateFromProjectData() {
     // Clear the existing drawing agents
     drawingAgents = [];
+	currColor= null;
+
+    // Restore the palette
+    if (projectData.palette) {
+        selectedPalette = projectData.palette;
+        createColorBar(); // Update the color bar with the restored palette
+        currColor = null; // Reset current color
+		console.log(selectedPalette)
+    }
+
+    // Restore the brushes
+    if (projectData.brushes) {
+        selectedBrushes = { ...projectData.brushes };
+        drawingParams = selectedBrushes.viby; // Default to the "viby" brush
+        console.log("Brushes restored:", selectedBrushes);
+    }
+
+	
 
     // Recreate the paths, base colors, and parameters
     projectData.paths.forEach((pathData) => {
-        path = pathData.path.map((p) => createVector(p.x, p.y)); // Convert plain objects to vectors
+        path = pathData.path.map((p) => createVector(p.x, p.y)); // Convert plain objects back to vectors
         currColor = pathData.baseColor; // Set the base color
         drawingParams = pathData.params; // Set the drawing parameters
 
@@ -531,4 +553,5 @@ function recreateFromProjectData() {
     // Reset the path and current color
     path = [];
     currColor = null;
+	state= State.DRAW
 }

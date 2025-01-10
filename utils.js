@@ -82,3 +82,8 @@ function filterDrawingAgent(drawingAgents, allowedKeys) {
     return drawingAgents;
 }
 
+
+function isHoveringUIElement() {
+  // Check if the mouse is over a UI element by examining `document.activeElement`
+  return document.activeElement.tagName === "INPUT" || isHoveringBar;
+}
