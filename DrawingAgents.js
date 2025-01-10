@@ -1,13 +1,13 @@
 class DrawingAgent {
-	constructor(selfParams) {
+	constructor(selfParams,path, baseColor) {
 	  this.horizontal_lr = new AgentGroup(selfParams);
 	  this.horizontal_rl = new AgentGroup(selfParams);
 	  this.vertical_td = new AgentGroup(selfParams);
 	  this.vertical_dt = new AgentGroup(selfParams);
 	}
 
+
 	setVehicles(){
-		console.log
 		// Check if each group exists before initializing vehicles
 		if (this.horizontal_lr) {
 			this.horizontal_lr.vehicles = [];
@@ -77,11 +77,11 @@ class DrawingAgent {
   }
   
   class AgentGroup {
-	constructor(selfParams) {
+	constructor(selfParams,path, baseColor) {
 	  this.vehicles = [];
 	  this.flowField = null;
 	  this.vehicleColors = [];
-	  this.params= selfParams
+	  this.params= selfParams;
 	}
 
 	flow(){

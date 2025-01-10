@@ -128,9 +128,9 @@ class Vehicle {
 	
 		// Gradually increase or decrease stroke weight
 		if (this.strokeActive && this.currentStrokeWeight < this.maxStrokeWeight) {
-			this.currentStrokeWeight += 0.1; // Adjust the increment for desired speed
+			this.currentStrokeWeight += this.strokeUp; // Adjust the increment for desired speed
 		} else if (!this.strokeActive && this.currentStrokeWeight > 0) {
-			this.currentStrokeWeight -= 0.1; // Adjust the decrement for desired speed
+			this.currentStrokeWeight -= this.strokeDecay; // Adjust the decrement for desired speed
 		}
 		
 		let strokeDead= this.currentStrokeWeight <= 0

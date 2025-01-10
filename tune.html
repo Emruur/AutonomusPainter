@@ -1,25 +1,101 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Template</title>
-		<script src="https://cdn.jsdelivr.net/npm/p5@1.11.1/lib/p5.min.js"></script>
-		<!-- <script src="libraries/p5.sound.js"></script> -->
-		<script src="utils.js"></script>
-		<script src="FlowField.js"></script>
-		<script src="Vehicle.js"></script>
-		<script src="DrawingAgents.js"></script>
-		<script src="tune.js"></script>
-		<style>
-			body {
-				margin: 0;
-				padding: 0;
-			}
-			canvas {
-				margin: auto;
-			}
-		</style>
-	</head>
-	<body></body>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tune Drawing</title>
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.11.1/lib/p5.min.js"></script>
+    <script src="utils.js"></script>
+    <script src="FlowField.js"></script>
+    <script src="Vehicle.js"></script>
+    <script src="DrawingAgents.js"></script>
+    <script src="tune.js"></script>
+    <style>
+      body {
+        display: flex;
+        margin: 0;
+        height: 100vh;
+      }
+      #controls-container {
+        width: 40%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        overflow-y: auto;
+        padding: 20px;
+        box-sizing: border-box;
+        background: #333;
+        color: #fff;
+        font-family: Arial, sans-serif;
+      }
+      #button-container {
+        display: flex;
+        justify-content: space-around;
+        margin-top: 20px;
+      }
+      #canvas-container {
+        width: 60%;
+        background: #222;
+        position: relative;
+      }
+      label {
+        display: block;
+        margin-bottom: 10px;
+        text-align: center; /* Center text on sliders */
+      }
+      input[type="range"] {
+        width: 100%;
+      }
+      button {
+        padding: 10px 20px;
+        background: #555;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        border-radius: 5px;
+      }
+      button:hover {
+        background: #777;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="controls-container">
+      <div id="sliders-container"></div>
+      <div id="button-container">
+        <button id="randomize-sliders">Randomize Sliders</button>
+        <button id="clear-canvas">Clear Canvas</button>
+        <button id="download-canvas">Download Canvas</button>
+      </div>
+    </div>
+    <div id="canvas-container"></div>
+    <script>
+      document.getElementById("randomize-sliders").addEventListener("click", () => {
+        
+        for (let key in paramRanges) {
+            let value= paramRanges[key]
+            const slider = document.querySelector(`#sliders-container input[data-key='${key}']`);
+            if (slider) {
+                const randomValue = randomInRange(value);
+                slider.value = randomValue;
+                drawingParams[key] = randomValue;
+            }
+        }
+        
+        renderDrawing();
+      });
+
+      document.getElementById("clear-canvas").addEventListener("click", () => {
+        paths = [];
+        state= State.DRAW
+        renderDrawing();
+      });
+
+      document.getElementById("download-canvas").addEventListener("click", () => {
+        saveCanvas("drawing", "png");
+        console.log(JSON.stringify(drawingParams, null, 2));
+      });
+    </script>
+  </body>
 </html>

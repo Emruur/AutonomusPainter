@@ -6,6 +6,7 @@
 		<title>Template</title>
 		<script src="https://cdn.jsdelivr.net/npm/p5@1.11.1/lib/p5.min.js"></script>
 		<!-- <script src="libraries/p5.sound.js"></script> -->
+		<script src="https://unpkg.com/ccapture.js@1.1.0/build/CCapture.all.min.js"></script>
 		<script src="utils.js"></script>
 		<script src="FlowField.js"></script>
 		<script src="Vehicle.js"></script>
@@ -52,21 +53,178 @@
 				border-color: #ff9800; /* Highlighted border */
 				transform: scale(1.05); /* Slight zoom effect */
 			}
+			.modal {
+				display: none; /* Hidden by default */
+				position: fixed; /* Stay in place */
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				background-color: #3333331a;
+				z-index: 1000; /* Ensure it overlays other elements */
+				justify-content: center;
+				align-items: center;
+			}
+
+			.modal-content {
+				background: #252525;
+				padding: 1rem;
+				padding-inline: 2rem;
+				border-radius: 10px;
+				position: relative;
+				width: 80%;
+				max-width: 500px;
+			}
+
+			.close {
+				position: absolute;
+				top: 10px;
+				right: 10px;
+				font-size: 34px;
+				cursor: pointer;
+				color: aliceblue;
+			}
+
+			.palette-container {
+				display: flex;
+				flex-wrap: wrap;
+				justify-content: center;
+				gap: 20px;
+			}
+
+			.palette {
+				width: 150px;
+				height: 150px;
+				border-radius: 50%;
+				position: relative;
+				cursor: pointer;
+			}
+
+			.palette:hover {
+				transform: scale(1.1);
+				transition: transform 0.2s;
+				z-index: 200;
+			}
+
+			.colors-bar{
+				display: flex;
+				justify-content: center;
+				align-items: center;
+			}
+
+			.brush-category {
+				margin-bottom: 20px;
+			}
+
+			.brush-list {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 10px;
+				justify-content: center;
+			}
+
+			.brush-button {
+				width: 80px;
+				height: 80px;
+				border: 2px solid #555;
+				border-radius: 8px;
+				cursor: pointer;
+				transition: transform 0.2s, border-color 0.3s;
+				background-color: #333;
+				color: white;
+				font-size: 12px;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				text-align: center;
+			}
+
+			.brush-button:hover {
+				transform: scale(1.1);
+				border-color: #ff9800;
+			}
+			.spinner {
+				border: 6px solid #f3f3f3; /* Light gray */
+				border-top: 6px solid #555; /* Dark gray */
+				border-radius: 50%;
+				width: 50px;
+				height: 50px;
+				animation: spin 1s linear infinite;
+				margin: 20px auto; /* Center horizontally */
+			}
+
+			@keyframes spin {
+				0% {
+					transform: rotate(0deg);
+				}
+				100% {
+					transform: rotate(360deg);
+				}
+			}
+
+			.white{
+				color: rgb(250, 238, 222);
+			}
+
+
 
 		</style>
 	</head>
 	<body>
-
 		<div class="bar">
-			<div class="color-bar">
-
+			<div class="colors-bar">
+				<button id="openPaletteModal">&#9660; <!-- Unicode for a downward arrow --></button>
+				<div class="color-bar">
 			</div>
-			<div class="brush-bar">
-				<button>a</button>
-				<button>a</button>
-				<button>a</button>
+			</div>
+			<div class="colors-bar">
+				<button id="openBrushModal">&#9660; <!-- Unicode for a downward arrow --></button>
+				<div class="brush-bar">
+					<button>a</button>
+					<button>a</button>
+					<button>a</button>
+				</div>
+			</div>
+			<div>
+				<button id="play">
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play" viewBox="0 0 16 16">
+						<path d="M10.804 8 5 4.633v6.734zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696z"/>
+					  </svg>
+				</button>
+				<button id="downloadButton">
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
+						<path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+						<path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
+					  </svg>
+				</button>
+				<button id="uploadButton">
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-upload" viewBox="0 0 16 16">
+						<path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+						<path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708z"/>
+					  </svg>
+				</button> <!-- Decimal -->
+			</div>
+		</div>
+	
+		<div id="paletteModal" class="modal">
+			<div class="modal-content">
+				<span class="close">&times;</span>
+				<div class="palette-container">
+					<!-- Dynamic palettes will be appended here -->
+				</div>
+			</div>
+		</div>
+		<div id="brushModal" class="modal">
+			<div class="modal-content">
+				<span class="close">&times;</span>
+				<h2 class="white">Select a Brush</h2>
+				<div id="spinner" class="spinner"></div> <!-- Spinner -->
+				<div id="brushContainer" style="display: none;">
+					<!-- Brush categories and brushes will be dynamically added here -->
+				</div>
 			</div>
 		</div>
 	</body>
+	
 </html> 
 

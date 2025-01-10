@@ -1,3 +1,6 @@
+
+
+
 let canvas; // Declare a global variable for the canvas
 let bar
 let isHoveringBar = false;
@@ -6,6 +9,14 @@ let drawingAgents= []
 let path= []
 let palettes;
 let currColor;
+
+let selectedBrushes= {
+	creative: null,
+	viby:null,
+	precise: null
+}
+
+
 
 let brushImages = {};
 let placeholderImages = {};
@@ -56,7 +67,7 @@ let drawingParams = {
 	vehicleStrokeUp: 0.2,
 	vehicleStrokeDecay: 0.2,
 	filteredOrientations: 3,
-  };
+};
 
 const State = Object.freeze({
     DRAW: "DRAW",
@@ -80,14 +91,10 @@ function drawPath(path) {
 	endShape();
 }
 
-function keyPressed() {
-	if (key === 'f' || key === 'F') { // Check for both lowercase and uppercase 'F'
-		state= State.FLOW
-		for (let agent of drawingAgents){
-			agent.setVehicles()
-		}
-		console.log("FINISHED")
-
+function flow(){
+	state= State.FLOW
+	for (let agent of drawingAgents){
+		agent.setVehicles()
 	}
 }
 
@@ -101,24 +108,24 @@ function isMousePressed() {
 }
 
 
+function setupNewAgent(existingColors = null){
+	
 
-
-function setupNewAgent(){
-	let drawingAgent= new DrawingAgent(drawingParams)
+	let drawingAgent= new DrawingAgent(drawingParams,path)
 	drawingAgent.setVehicles()
 	drawingAgent.horizontal_rl.flowField= new FlowField(InitType.HORIZONTAL_RL, drawingParams)
 	drawingAgent.horizontal_lr.flowField= new FlowField(InitType.HORIZONTAL_LR, drawingParams)
 	drawingAgent.vertical_td.flowField= new FlowField(InitType.VERTICAL_TD, drawingParams)
 	drawingAgent.vertical_dt.flowField= new FlowField(InitType.VERTICAL_DT, drawingParams)
 
-
 	let baseColor;
+
 	if (currColor== null)
 		baseColor = random(selectedPalette); // Sample one base color from the selected palette
 	else
 		baseColor= currColor
-	const perturbation = 40; // Neighborhood range for random sampling
 
+	const perturbation = 40; // Neighborhood range for random sampling
 	["horizontal_lr", "horizontal_rl", "vertical_td", "vertical_dt"].forEach((group) => {
 		for (let vehicle of drawingAgent[group].vehicles) {
 			let r = constrain(baseColor[0] + random(-perturbation, perturbation), 0, 255);
@@ -128,9 +135,10 @@ function setupNewAgent(){
 		}
 	});
 	
-	console.log(drawingAgent)
+	
 	drawingAgents.push(drawingAgent)
 }
+
 
 
 function setup() {
@@ -155,6 +163,16 @@ function setup() {
     bar.addEventListener('mouseleave', () => {
         isHoveringBar = false;
     });
+	// Choose a random brush from each category
+    for (const [category, brushesInCategory] of Object.entries(brushes)) {
+        const brushKeys = Object.keys(brushesInCategory); // Get all brush keys in this category
+        const randomBrushKey = random(brushKeys); // Randomly pick one brush key
+        selectedBrushes[category] = brushesInCategory[randomBrushKey]; // Save the random brush
+    }
+	drawingParams= selectedBrushes.viby
+
+	const playButton = document.getElementById("play")
+	playButton.addEventListener("click", flow)
 }
   
 function windowResized() {
@@ -165,21 +183,11 @@ function drawWithAgent() {
 
     // Example agent and vehicle setup (replace with your actual data structure)
     let drawingAgent = drawingAgents[drawingAgents.length - 1];
-
-    // Continue with the rest of your flow logic
-    let prominentAngle = calculateProminentOrientation(path);
-    let matchingAgents = new Set(determineClosestDirections(prominentAngle, drawingParams.filteredOrientations));
-    let filteredAgent = filterDrawingAgent(drawingAgent, matchingAgents);
-
-
 	drawingAgent.attractFieldToPath(path)
 	for (let i = 0; i < drawingParams.trackingIterations; i++) {
 		drawingAgent.flow()
 	}
 
-    // Update global state and reset for next iteration
-    drawingAgents[drawingAgents.length - 1] = filteredAgent;
-	console.log(drawingAgents[drawingAgents.length - 1])
     path = [];
 }
 
@@ -191,7 +199,7 @@ function draw(){
 	if (state !== State.FLOW){
 
 		if (isMousePressed()) {
-			console.log("DRAWING")
+
 			state= State.DRAWING
 			path.push(createVector(mouseX,mouseY))	
 		}
@@ -207,12 +215,14 @@ function draw(){
 		}
 	}
 
-	if(state === State.FLOW){
-		for( let agent of drawingAgents){
-			agent.flow()
-			agent.show()
+	if (state === State.FLOW) {
+
+        // Run the flow logic for all agents
+        for (let agent of drawingAgents) {
+            agent.flow();
+            agent.show();
 		}
-	}
+    }
 }
 
 
@@ -242,11 +252,11 @@ function createColorBar() {
 		colorBar.appendChild(button);
 	});
 }
+
 function createBrushBar() {
     const brushBar = document.querySelector('.brush-bar');
     brushBar.innerHTML = ''; // Clear existing buttons
 
-    // Check if placeholders are loaded
     if (!placeholderImages.viby || !placeholderImages.creative || !placeholderImages.precise) {
         console.error('Placeholder images are not loaded.');
         return;
@@ -254,46 +264,188 @@ function createBrushBar() {
 
     // Brush categories and their corresponding placeholder images
     const categories = [
-        { name: 'Creative', image: placeholderImages.creative, brushes: brushes.creative },
-        { name: 'Viby', image: placeholderImages.viby, brushes: brushes.viby },
-        { name: 'Precise', image: placeholderImages.precise, brushes: brushes.precise },
+        { name: 'creative', image: placeholderImages.creative },
+        { name: 'viby', image: placeholderImages.viby },
+        { name: 'precise', image: placeholderImages.precise },
     ];
 
-    // Iterate through categories to create buttons
     categories.forEach(category => {
-        const brushNames = Object.keys(category.brushes);
-        if (brushNames.length === 0) return;
-
-        // Randomly select one brush from the category
-        const randomBrushName = random(brushNames);
-        const selectedBrushParams = category.brushes[randomBrushName];
-
+        // Create a button for each category
         const button = document.createElement('button');
-        button.style.backgroundImage = `url(${category.image.canvas.toDataURL()})`; // Use loaded image as background
-        button.style.backgroundSize = 'cover'; // Ensure image covers the button
-        button.style.backgroundPosition = 'center'; // Center the image
-        button.style.border = '2px solid #555'; // Default border color
+        button.style.backgroundImage = `url(${category.image.canvas.toDataURL()})`; // Use placeholder image
+        button.style.backgroundSize = 'cover';
+        button.style.backgroundPosition = 'center';
+        button.style.border = '2px solid #555';
         button.style.borderRadius = '8px';
         button.style.cursor = 'pointer';
-        button.style.transition = 'border-color 0.3s ease'; // Smooth transition for border color change
-        button.style.width = '4rem'; // Adjust button size
+        button.style.width = '4rem';
         button.style.height = '3rem';
-        button.style.margin = '10px'; // Add spacing between buttons
+        button.style.margin = '10px';
 
         // Add hover effect for border color
         button.addEventListener('mouseover', () => {
-            button.style.borderColor = '#ff9800'; // Highlighted border color on hover
+            button.style.borderColor = '#ff9800';
         });
         button.addEventListener('mouseout', () => {
-            button.style.borderColor = '#555'; // Reset border color on mouse out
+            button.style.borderColor = '#555';
         });
 
-        // Add click event listener to update drawingParams
+        // Add click event listener to toggle the selected brush from the modal
         button.addEventListener('click', () => {
-            drawingParams= selectedBrushParams
+            drawingParams= selectedBrushes[category.name]
+			console.log(category.name)
         });
 
         // Append the button to the brush bar
         brushBar.appendChild(button);
     });
 }
+
+
+document.addEventListener("DOMContentLoaded", () => {
+	const openModalButton = document.getElementById("openPaletteModal");
+	const modal = document.getElementById("paletteModal");
+	const closeModalButton = modal.querySelector(".close");
+	const paletteContainer = modal.querySelector(".palette-container");
+
+	openModalButton.addEventListener("click", () => {
+		modal.style.display = "flex";
+		populatePalettes();
+	});
+
+	closeModalButton.addEventListener("click", () => {
+		modal.style.display = "none";
+	});
+
+	window.addEventListener("click", (e) => {
+		if (e.target === modal) {
+			modal.style.display = "none";
+		}
+	});
+
+	function populatePalettes() {
+		paletteContainer.innerHTML = ""; // Clear existing palettes
+		const paletteNames = Object.keys(palettes);
+
+		paletteNames.forEach((paletteName) => {
+			const colors = palettes[paletteName];
+			const paletteDiv = document.createElement("div");
+			paletteDiv.className = "palette";
+			paletteDiv.title = paletteName;
+
+			// Create sectors for each color
+			const sectors = colors.length;
+			colors.forEach((color, index) => {
+				const sector = document.createElement("div");
+				const angle = 360 / sectors;
+				sector.style = `
+					position: absolute;
+					width: 50%;
+					height: 50%;
+					background-color: rgb(${color.join(",")});
+					clip-path: polygon(0 0, 100% 0, 50% 50%);
+					transform-origin: 100% 100%;
+					transform: rotate(${angle * index}deg);
+				`;
+				paletteDiv.appendChild(sector);
+			});
+
+			paletteDiv.addEventListener("click", () => {
+				selectedPalette = colors;
+				currColor = null; // Reset current color
+				createColorBar();
+				modal.style.display = "none";
+			});
+
+			paletteContainer.appendChild(paletteDiv);
+		});
+	}
+});
+
+
+document.addEventListener("DOMContentLoaded", () => {
+    const openBrushModalButton = document.getElementById("openBrushModal");
+    const brushModal = document.getElementById("brushModal");
+    const closeBrushModalButton = brushModal.querySelector(".close");
+    const brushContainer = document.getElementById("brushContainer");
+
+    // Open Brush Modal
+    openBrushModalButton.addEventListener("click", () => {
+        brushModal.style.display = "flex";
+        populateBrushes();
+    });
+
+    // Close Brush Modal
+    closeBrushModalButton.addEventListener("click", () => {
+        brushModal.style.display = "none";
+    });
+
+    // Close modal when clicking outside of it
+    window.addEventListener("click", (e) => {
+        if (e.target === brushModal) {
+            brushModal.style.display = "none";
+        }
+    });
+
+    // Populate Brushes
+    
+    function populateBrushes() {
+		const brushContainer = document.getElementById("brushContainer");
+		const spinner = document.getElementById("spinner");
+	
+		// Show spinner and hide brush container initially
+		spinner.style.display = "block";
+		brushContainer.style.display = "none";
+	
+		// Simulate loading process
+		setTimeout(() => {
+			brushContainer.innerHTML = ""; // Clear existing brushes
+	
+			// Loop through brush categories
+			Object.keys(brushes).forEach((category) => {
+				const categoryDiv = document.createElement("div");
+				categoryDiv.className = "brush-category";
+	
+				// Category Title
+				const title = document.createElement("h3");
+				title.textContent = category;
+				title.className= "white";
+				categoryDiv.appendChild(title);
+	
+				// Brushes for the category
+				const brushList = document.createElement("div");
+				brushList.className = "brush-list";
+	
+				Object.keys(brushes[category]).forEach((brushName) => {
+					const brushButton = document.createElement("button");
+					brushButton.textContent = brushName; // Use brush name as button text
+					brushButton.className = "brush-button";
+	
+					// Add an image preview (if available)
+					if (brushImages[brushName]) {
+						brushButton.style.backgroundImage = `url(${brushImages[brushName].canvas.toDataURL()})`;
+						brushButton.style.backgroundSize = "cover";
+					}
+	
+					// On brush selection
+					brushButton.addEventListener("click", () => {
+						drawingParams = brushes[category][brushName]; // Update drawing parameters
+						selectedBrushes[category]= brushes[category][brushName];
+						console.log(`Selected Brush: ${brushName} in Category: ${category}`);
+						brushModal.style.display = "none"; // Close modal
+					});
+	
+					brushList.appendChild(brushButton);
+				});
+	
+				categoryDiv.appendChild(brushList);
+				brushContainer.appendChild(categoryDiv);
+			});
+	
+			// Hide spinner and show brush container
+			spinner.style.display = "none";
+			brushContainer.style.display = "block";
+		}, 100); // Adjust the timeout as needed (or remove it for real-time loading)
+	}
+	
+});
