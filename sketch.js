@@ -1,5 +1,7 @@
 
-
+let projectData = {
+    paths: [] // This will hold the paths with their base colors and drawing parameters
+};
 
 let canvas; // Declare a global variable for the canvas
 let bar
@@ -15,8 +17,6 @@ let selectedBrushes= {
 	viby:null,
 	precise: null
 }
-
-
 
 let brushImages = {};
 let placeholderImages = {};
@@ -53,7 +53,6 @@ function getRandomColorFromPalettes(palettes) {
     const randomPalette = palettes[randomPaletteName];
     return random(randomPalette); // Random color from the selected palette
 }
-
 
 let drawingParams = {
 	numOfVehicles: 50,
@@ -110,7 +109,6 @@ function isMousePressed() {
 
 function setupNewAgent(existingColors = null){
 	
-
 	let drawingAgent= new DrawingAgent(drawingParams,path)
 	drawingAgent.setVehicles()
 	drawingAgent.horizontal_rl.flowField= new FlowField(InitType.HORIZONTAL_RL, drawingParams)
@@ -137,6 +135,12 @@ function setupNewAgent(existingColors = null){
 	
 	
 	drawingAgents.push(drawingAgent)
+	
+	projectData.paths.push({
+		path: path.map((p) => ({ x: p.x, y: p.y })), // Convert vectors to plain {x, y} objects
+		baseColor: baseColor, // Base color is an array and works fine as is
+		params: { ...drawingParams } // Shallow clone of params (if it's just plain data)
+	});
 }
 
 
@@ -171,8 +175,15 @@ function setup() {
     }
 	drawingParams= selectedBrushes.viby
 
+
 	const playButton = document.getElementById("play")
 	playButton.addEventListener("click", flow)
+
+	const downloadButton= document.getElementById("downloadButton")
+	const uploadButton= document.getElementById("uploadButton")
+
+	downloadButton.addEventListener("click", download)
+	uploadButton.addEventListener("click", upload)
 }
   
 function windowResized() {
@@ -183,6 +194,7 @@ function drawWithAgent() {
 
     // Example agent and vehicle setup (replace with your actual data structure)
     let drawingAgent = drawingAgents[drawingAgents.length - 1];
+
 	drawingAgent.attractFieldToPath(path)
 	for (let i = 0; i < drawingParams.trackingIterations; i++) {
 		drawingAgent.flow()
@@ -190,7 +202,6 @@ function drawWithAgent() {
 
     path = [];
 }
-
 
 
 function draw(){
@@ -449,3 +460,75 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
 	
 });
+
+
+
+function download() {
+    // Prepare the JSON object
+    const dataStr = JSON.stringify(projectData, null, 2); // Pretty-print JSON
+    const blob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    // Create a temporary download link
+    const downloadLink = document.createElement("a");
+    downloadLink.href = url;
+    downloadLink.download = "project.json";
+    downloadLink.click();
+
+    // Revoke the object URL to free memory
+    URL.revokeObjectURL(url);
+    console.log("Project downloaded successfully!");
+}
+
+function upload() {
+    // Create a file input element
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "application/json";
+
+    // Handle file selection
+    input.addEventListener("change", (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // Read the file as text
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                // Parse the JSON and update `projectData`
+                const uploadedData = JSON.parse(e.target.result);
+                projectData = uploadedData;
+
+                // Recreate the drawing agents and paths from the uploaded data
+                recreateFromProjectData();
+                console.log("Project uploaded successfully!");
+            } catch (err) {
+                console.error("Error parsing the uploaded file:", err);
+            }
+        };
+        reader.readAsText(file);
+    });
+
+    // Simulate a click on the file input to open the file picker
+    input.click();
+}
+
+function recreateFromProjectData() {
+    // Clear the existing drawing agents
+    drawingAgents = [];
+
+    // Recreate the paths, base colors, and parameters
+    projectData.paths.forEach((pathData) => {
+        path = pathData.path.map((p) => createVector(p.x, p.y)); // Convert plain objects to vectors
+        currColor = pathData.baseColor; // Set the base color
+        drawingParams = pathData.params; // Set the drawing parameters
+
+        // Create a new agent with the data
+        setupNewAgent();
+        drawWithAgent();
+    });
+
+    // Reset the path and current color
+    path = [];
+    currColor = null;
+}
