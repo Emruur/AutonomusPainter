@@ -22,6 +22,9 @@
 				overflow: hidden; /* Prevent scrollbars */
 				
 			}
+			a{
+				color: rgb(72, 72, 152);
+			}
 			canvas {
 				margin: auto;
 			}
@@ -166,6 +169,99 @@
 				color: rgb(250, 238, 222);
 			}
 
+			/* Updated class names to avoid conflicts */
+			.intro-modal {
+				display: flex; /* Show modal initially */
+				position: fixed;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				background-color: rgba(0, 0, 0, 0.8);
+				z-index: 1000;
+				justify-content: center;
+				align-items: center;
+			}
+
+			.intro-modal-content {
+				background: #252525;
+				color: #fff;
+				padding: 20px;
+				border-radius: 10px;
+				width: 80%;
+				max-width: 600px;
+				text-align: center;
+				position: relative;
+			}
+
+			.intro-modal .close {
+				position: absolute;
+				top: 10px;
+				right: 10px;
+				font-size: 24px;
+				cursor: pointer;
+				color: white;
+			}
+
+			.intro-modal .pagination-controls {
+				display: flex;
+				justify-content: space-between;
+				margin-top: 20px;
+			}
+
+			.intro-modal button {
+				background-color: #333;
+				color: #fff;
+				padding: 10px;
+				border: 1px solid #555;
+				border-radius: 5px;
+				cursor: pointer;
+				transition: all 0.3s ease;
+			}
+
+			.intro-modal button:hover {
+				background-color: #555;
+			}
+
+			.intro-modal button:disabled {
+				background-color: #444;
+				color: #999;
+				cursor: not-allowed;
+			}
+
+			.intro-modal .page {
+				display: none;
+			}
+
+			.img-div{
+				display: flex;
+				align-items: center;
+				justify-content: space-around;
+			}
+
+			.img-in-div{
+				width: 150px;
+				height: 150px;
+
+				border-radius: 1rem;
+			}
+
+			.b-info-div{
+				display: flex;
+				justify-content: space-around;
+				align-items: center;
+				padding: 0.5rem;
+			}
+
+			.b-info-img{
+				height: 50px;
+				width: 50px;
+				border-radius: 1rem;
+			}
+
+			.p-info{
+				max-width: 400px;
+			}
 
 
 		</style>
@@ -221,6 +317,62 @@
 				<div id="spinner" class="spinner"></div> <!-- Spinner -->
 				<div id="brushContainer" style="display: none;">
 					<!-- Brush categories and brushes will be dynamically added here -->
+				</div>
+			</div>
+		</div>
+
+		<div id="introModal" class="intro-modal">
+			<div class="intro-modal-content">
+				<span class="close">&times;</span>
+				<div class="pagination-content">
+					<!-- Page 1 -->
+					<div class="page" id="page1">
+						<h2>Welcome to Creative Brushes</h2>
+						<p>This co-creative drawing application will allow you to direct autonomus drawing agents to draw creative sketches.
+							The drawing agents act as interesting and non-predictable brushes that will steer you in the right creative direction.
+							This system draws inspriation from natural dynamic drawing mediums that add their own touch to the artwork such as water colors and Turkish marbling art(ebru)
+						</p>
+						<div class="img-div">
+							<img src="assets/sulu.jpeg"  class="img-in-div" alt="">
+							<img src="assets/ebru.jpeg" class="img-in-div"  alt="">
+							<img src="assets/demo.gif" class="img-in-div"  alt="">
+						</div>
+
+						<p>
+							For more information on the system and to create your own brushes visit the <a href="https://github.com/Emruur/CreativeBrushes">github page</a>
+						</p>
+					</div>
+					<!-- Page 2 -->
+					<div class="page" id="page2" style="display: none;">
+						<h2>Getting Started</h2>
+						<p>Use the top bar to choose brushes, colors, and more. Press "Play" to see your creations flow!</p>
+						<h3>Color Palette</h3>
+						<p>On the leftmost of the bar you will see the available color palette from which you can select colors. Toggle the dropdown to select a different palette</p>
+						<h3>Brush palette</h3>
+						<p>Middlle of the bar is the brush palette where 3 brushes with distinct qualities can be toggeled.</p>
+						<div class="b-info-div">
+							<img src="assets/creative.png" class="b-info-img" alt="">
+							<p class="p-info">Creative brushes will surprise you with their unpredictable touch and will put you in the creative mood.</p>
+						</div>
+						<div class="b-info-div">
+							<img src="assets/viby.png" class="b-info-img" alt="">
+							<p class="p-info">Viby brushes will mostly draw what you expect but with a vibe</p>
+						</div>
+						<div class="b-info-div">
+							<img src="assets/precise.png" class="b-info-img" alt="">
+							<p class="p-info">Precise brushes will draw what you draw. Nothing interesting here</p>
+						</div>
+						<h3>Import & Export & Play</h3>
+						<p>Rightmost of the bar you have the play & export & import. Play will show you the agents drawing the canvas and doing their magic. 
+							Export will download the project as a json which you can later import using the import button. <strong>
+								import only works with a fresh project (refresh if necessary)
+							</strong>
+						</p>
+					</div>
+				</div>
+				<div class="pagination-controls">
+					<button id="prevPage" disabled>&larr;</button>
+					<button id="nextPage">&rarr;</button>
 				</div>
 			</div>
 		</div>

@@ -1,5 +1,7 @@
 //FIXME caching problem when loading
 //FIXME SLow on chrome ok on safari
+//TODO fraw after play
+// Import brushes 
 
 
 let projectData = {
@@ -11,6 +13,7 @@ let projectData = {
 let canvas; // Declare a global variable for the canvas
 let bar
 let isHoveringBar = false;
+let isModalOpen = false; // Tracks whether a modal is open
 
 let drawingAgents= []
 let path= []
@@ -103,12 +106,17 @@ function flow(){
 }
 
 function isMousePressed() {
-	if (!canvas || !canvas.elt || !bar) {
-		console.error("Canvas or bar is not defined or invalid.");
-		return false;
-	}
+    // Ignore mouse presses if a modal is open
+    if (isModalOpen) {
+        return false;
+    }
 
-	return mouseIsPressed && !isHoveringBar && !isHoveringUIElement()
+    if (!canvas || !canvas.elt || !bar) {
+        console.error("Canvas or bar is not defined or invalid.");
+        return false;
+    }
+
+    return mouseIsPressed && !isHoveringBar && !isHoveringUIElement();
 }
 
 
@@ -555,3 +563,61 @@ function recreateFromProjectData() {
     currColor = null;
 	state= State.DRAW
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    const introModal = document.getElementById("introModal");
+    const closeModalButton = introModal.querySelector(".close");
+    const pages = Array.from(document.querySelectorAll(".page"));
+    const prevPageButton = document.getElementById("prevPage");
+    const nextPageButton = document.getElementById("nextPage");
+
+    let currentPageIndex = 0;
+
+    function updatePagination() {
+        pages.forEach((page, index) => {
+            page.style.display = index === currentPageIndex ? "block" : "none";
+        });
+        prevPageButton.disabled = currentPageIndex === 0;
+        nextPageButton.disabled = currentPageIndex === pages.length - 1;
+    }
+
+    prevPageButton.addEventListener("click", () => {
+        if (currentPageIndex > 0) {
+            currentPageIndex--;
+            updatePagination();
+        }
+    });
+
+    nextPageButton.addEventListener("click", () => {
+        if (currentPageIndex < pages.length - 1) {
+            currentPageIndex++;
+            updatePagination();
+        }
+    });
+
+    closeModalButton.addEventListener("click", () => {
+        introModal.style.display = "none";
+    });
+
+    updatePagination(); // Show the first page
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    const introModal = document.getElementById("introModal");
+    const closeModalButton = introModal.querySelector(".close");
+
+    // Open the modal and set isModalOpen to true
+    function openIntroModal() {
+        introModal.style.display = "flex";
+        isModalOpen = true;
+    }
+
+    // Close the modal and set isModalOpen to false
+    closeModalButton.addEventListener("click", () => {
+        introModal.style.display = "none";
+        isModalOpen = false;
+    });
+
+    // Example: Open the modal on page load
+    openIntroModal();
+});
