@@ -35,7 +35,7 @@ https://natureofcode.com/autonomous-agents/#flow-fields
 
 ## Modifying the flow field
 
-EMRE
+To direct the agents path we can alter the flow field. To do that we define a radius and attract the the vectors within that radius to the mouse location. With this method we can essentially draw on a path on the flow field and the agents that come accross our path will follow it. 
 
 TODO
 
