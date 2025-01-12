@@ -30,28 +30,36 @@ https://natureofcode.com/autonomous-agents/#flow-fields
 
 ### Parameters of the flow field?
 - resolution
-- direction
-    - using 4 flow fields with different directions
 
 ## Modifying the flow field
 
-To direct the agents path we can alter the flow field. To do that we define a radius and attract the the vectors within that radius to the mouse location. With this method we can essentially draw on a path on the flow field and the agents that come accross our path will follow it. 
+To direct the agents path we can alter the flow field. To do that we define a radius and attract the the vectors within that radius to the mouse location. With this method we can essentially draw on a path on the flow field and the agents that come accross our path will follow it.  However a problem with this method is that at the end of the path a black hole forms where every vector within that radius points to the center and any agent that come accross the black hole gets stuck. To solve this issue we take the mouse location of the previous timestep and extrapolate the position of the next mouse location such that it falls on the rim of the attraction circle.
 
-TODO
+**Equation for the Attract Point**
+$$
+\mathbf{futureTarget} = \mathbf{target\_pos} + \mathbf{velocity}
+$$
 
-FlowField.js/attractToPath
-### Parameters of modificaion
-- attraction radius
+Where:
 
-## Other drawing parameters
+- $\mathbf{velocity} = \mathbf{target\_pos} - \mathbf{previousTarget}$
+- $\|\mathbf{velocity}\| = \text{radius\_pixel}$ (scaled to match the radius)
 
-EMRE
 
-- tracking iterations
+<div style="display: flex; justify-content: center; gap: 20px; margin-top: 20px; margin-bottom: 20px">
+    <img src="reportAssets/drawFF.gif" alt="Watercolor Example" style="width: 250px; height: auto; border: 2px solid #ddd; border-radius: 5px;">
+    <img src="reportAssets/flowFF.gif" alt="Ebru Example" style="width: 250px; height: auto; border: 2px solid #ddd; border-radius: 5px;">
+</div>
 
-### Drawing while on the field
-- stroke up / down
-- max trail length
+
+Note that the agents start drawing once they enter the attraction radius of the path and they gradually increase their stroke once they enter the radius and decrease their stroke once they leave the attraction radius for a smooth effect.  
+
+This process in total gives us three drawing parameters that can be modified to alter the drawing behaviour.
+
+- AttractionRadius
+- StrokeUp
+- StrokeDown
+
 
 ## How to find good parameters that draw good
 
