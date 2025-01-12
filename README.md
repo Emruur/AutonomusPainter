@@ -46,7 +46,7 @@ Where:
 - $\|\mathbf{velocity}\| = \text{radius\_pixel}$ (scaled to match the radius)
 
 
-<div style="display: flex; justify-content: center; gap: 20px; margin-top: 20px; margin-bottom: 20px">
+<div style="display: flex; justify-content: center; gap: 20px; margin-top: 20px; margin-bottom: 20px;">
     <img src="reportAssets/drawFF.gif" alt="Watercolor Example" style="width: 250px; height: auto; border: 2px solid #ddd; border-radius: 5px;">
     <img src="reportAssets/flowFF.gif" alt="Ebru Example" style="width: 250px; height: auto; border: 2px solid #ddd; border-radius: 5px;">
 </div>
@@ -59,6 +59,8 @@ This process in total gives us three drawing parameters that can be modified to 
 - AttractionRadius
 - StrokeUp
 - StrokeDown
+
+
 
 
 ## How to find good parameters that draw good
