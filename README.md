@@ -19,8 +19,12 @@ TODO https://natureofcode.com/autonomous-agents/
 - max speed?
 ...
 
+ALPER
+
 
 ## Flow Field Following
+
+GOKALP
 TODO
 https://natureofcode.com/autonomous-agents/#flow-fields
 
@@ -31,6 +35,8 @@ https://natureofcode.com/autonomous-agents/#flow-fields
 
 ## Modifying the flow field
 
+EMRE
+
 TODO
 
 FlowField.js/attractToPath
@@ -39,6 +45,8 @@ FlowField.js/attractToPath
 
 ## Other drawing parameters
 
+EMRE
+
 - tracking iterations
 
 ### Drawing while on the field
@@ -46,6 +54,8 @@ FlowField.js/attractToPath
 - max trail length
 
 ## How to find good parameters that draw good
+
+EMRE
 
 ### Define reasonable ranges for each parameter
 
@@ -65,10 +75,17 @@ FlowField.js/attractToPath
 
 ### Evolutionary Search
 search.js - search.html
+
+GOKALP
+
 ### Modifying the parameters manually
 tune.js tune.html
 
+ALPER
+
 ## Dealing with Color
+
+EMRE
 
 
 
