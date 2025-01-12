@@ -23,9 +23,18 @@ ALPER
 
 
 ## Flow Field Following
+### Flow Fields
 
-GOKALP
-TODO
+Flow fields are that store directions. In our 2d case it is a 2d matrix that stores 2d vectors.
+
+![](reportAssets/flowFields.png)
+
+We can make our agents follow this flow fields rather than seeking a target as explained previously. To do that we query the flow field to obtain the corresponding vector to be followed depending on the agents curent position. Than we set the agents desired vector with the vector that is returned by the flow field.
+
+A parameter of a flow field is its resolution. We can have a flow field that has a vector for each pixel in the canvas but its often computationally unfeasible, thus lower resolution flow fiewlds are often used in practice where the canvas is divided into a grid of pixels and each cell of pixels have a common direction vector.
+
+The resolution of the flow field is a major parameter to alter the drawing behaviour, thus we will have a *flowFieldResolution* drawing parameter.
+
 https://natureofcode.com/autonomous-agents/#flow-fields
 
 ### Parameters of the flow field?
@@ -59,6 +68,12 @@ This process in total gives us three drawing parameters that can be modified to 
 - AttractionRadius
 - StrokeUp
 - StrokeDown
+
+### Multiple Flow Fields
+
+When the drawn path directs towards the flow field we get sub-optimal drawing performance from agents. To owecome this issue we 4 flow fields in 4 directions(left to right, top to bottom and etc) and let 4 sets of agent groups track these fields. As a result more coherent drawings for different angled paths are obtained.
+
+![a](reportAssets/4flowFF.gif)
 
 
 
