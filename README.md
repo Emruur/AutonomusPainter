@@ -31,14 +31,13 @@ Flow fields are that store directions. In our 2d case it is a 2d matrix that sto
 
 We can make our agents follow this flow fields rather than seeking a target as explained previously. To do that we query the flow field to obtain the corresponding vector to be followed depending on the agents curent position. Than we set the agents desired vector with the vector that is returned by the flow field.
 
+![](reportAssets/FFfollow.gif)
+
 A parameter of a flow field is its resolution. We can have a flow field that has a vector for each pixel in the canvas but its often computationally unfeasible, thus lower resolution flow fiewlds are often used in practice where the canvas is divided into a grid of pixels and each cell of pixels have a common direction vector.
 
 The resolution of the flow field is a major parameter to alter the drawing behaviour, thus we will have a *flowFieldResolution* drawing parameter.
 
 https://natureofcode.com/autonomous-agents/#flow-fields
-
-### Parameters of the flow field?
-- resolution
 
 ## Modifying the flow field
 
@@ -80,7 +79,7 @@ When the drawn path directs towards the flow field we get sub-optimal drawing pe
 
 ## How to find good parameters that draw good
 
-EMRE
+So far a dozen parameters that alter the end drawing drastically have mentioned. These parameters have weird interactions with each other and often yield unexpected results. To find a good configuration we set reasonable ranges for each parameter and used two methods to find the configurations we liked, manual configuration and evolutionary search.
 
 ### Define reasonable ranges for each parameter
 
@@ -108,9 +107,10 @@ tune.js tune.html
 
 ALPER
 
-## Dealing with Color
+## Results
 
 EMRE
+
 
 
 
