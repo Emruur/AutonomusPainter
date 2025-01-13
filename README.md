@@ -12,14 +12,84 @@ This system draws inspiration from natural dynamic drawing mediums that add thei
 
 ## Autonomus Agents
 
-TODO https://natureofcode.com/autonomous-agents/
+**Autonomous Agents**
 
-### Parameters of the agents
-- max velocity?
-- max speed?
-...
+Autonomous agents are computational entities designed to operate
+independently, perceiving and responding to their environment based on
+simple yet effective behavioral rules. In this project, these agents are
+conceptualized as \"vehicles\" that dynamically interact with their
+surroundings to produce emergent visual patterns.
 
-ALPER
+**Key Characteristics**
+
+-   **Autonomy**: Each agent acts independently, using local information
+    and internal rules to decide its actions without external control.
+
+-   **Perception**: Agents detect elements in their environment, such as
+    paths or flow fields, which influence their decisions and movement.
+
+-   **Action**: Based on their perception, agents adjust their position
+    and orientation, leaving visually compelling trails that contribute
+    to the overall system dynamics.
+
+**Seeking Behavior**
+
+The primary behavior driving these agents is their ability to \"seek\" a
+target. Seeking is a steering behavior where an agent calculates the
+direction and velocity required to move toward a specific goal. This
+involves:
+
+1.  Determining the **desired direction** to the target.
+
+2.  Adjusting movement to align with the target while maintaining smooth
+    transitions.
+
+3.  Balancing speed and force to avoid overshooting or unnatural
+    movements.
+
+This behavior allows the agents to follow paths, approach specific
+points, or navigate flow fields effectively. The outcome is a visually
+dynamic and natural-looking movement, with agents appearing to
+\"intentionally\" pursue goals.
+
+**Parameters Governing Seeking**
+
+The seeking behavior is modulated by two core parameters:
+
+-   **Maximum Speed**: Defines the upper limit of an agent\'s velocity.
+    A higher value results in faster movement, but excessive speed may
+    reduce smoothness and precision.
+
+-   **Maximum Force**: Restricts the steering adjustments the agent can
+    make. Lower values produce gradual, fluid turns, while higher values
+    allow for sharp and reactive movements.
+
+These parameters ensure that each agent balances responsiveness and
+stability, enabling a wide range of motion profiles to suit different
+scenarios.
+
+**Role in the System**
+
+Seeking behavior is integral to the system, driving the agents' ability
+to:
+
+-   Navigate flow fields: Agents align with the flow\'s direction while
+    moving toward designated paths.
+
+-   Approach targets: Whether a static point or a moving goal, agents
+    continuously adjust to converge on their objective.
+
+-   Contribute to visual dynamics: The trails left by agents reflect
+    their smooth, coordinated movements, creating an aesthetically
+    engaging output.
+
+**Emergent Patterns**
+
+Although each agent operates independently with simple rules, their
+interactions with the environment and other agents result in complex,
+emergent behaviors. This highlights the strength of autonomous systems
+in producing intricate outputs from minimal individual logic.
+
 
 
 ## Flow Field Following
@@ -44,14 +114,14 @@ https://natureofcode.com/autonomous-agents/#flow-fields
 To direct the agents path we can alter the flow field. To do that we define a radius and attract the the vectors within that radius to the mouse location. With this method we can essentially draw on a path on the flow field and the agents that come accross our path will follow it.  However a problem with this method is that at the end of the path a black hole forms where every vector within that radius points to the center and any agent that come accross the black hole gets stuck. To solve this issue we take the mouse location of the previous timestep and extrapolate the position of the next mouse location such that it falls on the rim of the attraction circle.
 
 **Equation for the Attract Point**
-$$
+\[
 \mathbf{futureTarget} = \mathbf{target\_pos} + \mathbf{velocity}
-$$
+\]
 
 Where:
 
-- $\mathbf{velocity} = \mathbf{target\_pos} - \mathbf{previousTarget}$
-- $\|\mathbf{velocity}\| = \text{radius\_pixel}$ (scaled to match the radius)
+- \(\mathbf{velocity} = \mathbf{target\_pos} - \mathbf{previousTarget}\)
+- \(\|\mathbf{velocity}\| = \text{radius\_pixel}\) (scaled to match the radius)
 
 
 <div style="display: flex; justify-content: center; gap: 20px; margin-top: 20px; margin-bottom: 20px;">
@@ -134,15 +204,119 @@ By using evolutionary search, the project achieves diverse and creative results 
 
 
 ### Modifying the parameters manually
-tune.js tune.html
 
-ALPER
+The behavior of the DrawingAgent system, implemented through the
+DrawingAgent.js and AgentGroup classes, can be fine-tuned by adjusting
+key parameters. These modifications can be performed directly within the
+associated **tune.js** and **tune.html** files, enabling both static and
+dynamic configuration of the system.
+
+**Configuration via tune.js**
+
+The **tune.js** file contains a selfParams object where all key
+parameters are defined. These include:
+
+-   **numOfVehicles**: Number of vehicles in each group *(1--300)*.
+
+-   **trackingIterations**: Number of tracking calculations
+    *(100--1500)*.
+
+-   **flowFieldResolution**: Grid resolution for flow fields *(4--200)*.
+
+-   **attractionRadius**: Radius of attraction to targets *(5--100)*.
+
+-   **maxVehicleForce**: Maximum steering force *(0.2--5)*.
+
+-   **maxVehicleSpeed**: Maximum speed *(1--10)*.
+
+-   **maxVehicleStroke**: Vehicle stroke width *(1--10)*.
+
+-   **maxVehicleTrailLength**: Length of trails *(10--200)*.
+
+-   **vehicleStrokeUp**: Stroke increment *(0.1--1)*.
+
+-   **vehicleStrokeDecay**: Stroke decay rate *(0.1--1)*.
+
+-   **filteredOrientations**: Number of orientations for smoothing
+    *(1--4)*.
+
+Example configuration in tune.js:
+
+const selfParams = {
+
+numOfVehicles: 50,
+
+trackingIterations: 1000,
+
+flowFieldResolution: 10,
+
+attractionRadius: 20,
+
+maxVehicleForce: 1.0,
+
+maxVehicleSpeed: 5.0,
+
+maxVehicleStroke: 3.0,
+
+maxVehicleTrailLength: 100,
+
+vehicleStrokeUp: 0.5,
+
+vehicleStrokeDecay: 0.2,
+
+filteredOrientations: 2
+
+};
+
+**Real-Time Adjustments via tune.html**
+
+The **tune.html** file facilitates user-friendly, real-time
+modifications through interactive elements such as sliders and input
+fields. These inputs dynamically update the values of parameters in
+tune.js during runtime.
+
+For instance:
+
+\<label for=\"numVehicles\"\>Number of Vehicles:\</label\>
+
+\<input type=\"range\" id=\"numVehicles\" min=\"1\" max=\"50\"
+value=\"20\"\>
+
+Using JavaScript event listeners, parameter changes can be propagated to
+the system:
+
+document.getElementById(\'numVehicles\').addEventListener(\'input\', (e)
+=\> {
+
+selfParams.numOfVehicles = e.target.value;
+
+drawingAgent.setVehicles(); // Reinitialize vehicles
+
+});
+
+**Experimental Adjustments**
+
+Below are examples of configurations and their expected outcomes:
+
+-   **High-Density Movement**:
+
+> const selfParams = { numOfVehicles: 50, maxSpeed: 3, maxForce: 0.05 };
+
+-   **Minimalist and Fast Movement**:
+
+> const selfParams = { numOfVehicles: 10, maxSpeed: 10, maxForce: 0.2 };
 
 ## Results
 
-EMRE
+Here are some of the artwork we created with the system. When started with a creative brush the system can alter the perceptive state of the user such that it allows them to be creative. Its almost like looking at clouds and seeing some objects. It allows rapid construction of interesting drawings since the system itself adds a lot of texture and detail and the user can have a high level thinking/execution. User can add its own brushes to the system for which they can be more creative and comfortable with which improves on the usability of the system. Further systems can experiment with path following agents rather than flow field following agents.
 
+<div style="display: flex; justify-content: center; gap: 20px; margin-top: 20px; margin-bottom: 20px">
+    <img src="reportAssets/r1.gif" alt="Watercolor Example" style="width: 250px; height: auto; border: 2px solid #ddd; border-radius: 5px;">
+    <img src="reportAssets/r2.gif" alt="Ebru Example" style="width: 250px; height: auto; border: 2px solid #ddd; border-radius: 5px;">
+    <img src="reportAssets/r3.gif" alt="Drawing Agent Demo" style="width: 250px; height: auto; border: 2px solid #ddd; border-radius: 5px;">
+</div>
 
+Images Space Bug, The Fish and the Monster tamer respectively
 
 
 
