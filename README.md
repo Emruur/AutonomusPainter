@@ -1,3 +1,8 @@
+# How To Use?
+cd /path/to/this/directory
+python -m http.server 8000
+
+
 # Creative Brushes
 
 Creative brushes will allow you to direct autonomous drawing agents to draw creative sketches.  
@@ -114,16 +119,13 @@ https://natureofcode.com/autonomous-agents/#flow-fields
 To direct the agents path we can alter the flow field. To do that we define a radius and attract the the vectors within that radius to the mouse location. With this method we can essentially draw on a path on the flow field and the agents that come accross our path will follow it.  However a problem with this method is that at the end of the path a black hole forms where every vector within that radius points to the center and any agent that come accross the black hole gets stuck. To solve this issue we take the mouse location of the previous timestep and extrapolate the position of the next mouse location such that it falls on the rim of the attraction circle.
 
 **Equation for the Attract Point**
-\[
-\mathbf{futureTarget} = \mathbf{target\_pos} + \mathbf{velocity}
-\]
+
+futureTarget = target_pos + velocity
 
 Where:
 
-- \(\mathbf{velocity} = \mathbf{target\_pos} - \mathbf{previousTarget}\)
-- \(\|\mathbf{velocity}\| = \text{radius\_pixel}\) (scaled to match the radius)
-
-
+- velocity = target_pos - previousTarget
+- ||velocity|| = radius_pixel (scaled to match the radius)
 <div style="display: flex; justify-content: center; gap: 20px; margin-top: 20px; margin-bottom: 20px;">
     <img src="reportAssets/drawFF.gif" alt="Watercolor Example" style="width: 250px; height: auto; border: 2px solid #ddd; border-radius: 5px;">
     <img src="reportAssets/flowFF.gif" alt="Ebru Example" style="width: 250px; height: auto; border: 2px solid #ddd; border-radius: 5px;">
