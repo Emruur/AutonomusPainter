@@ -14,6 +14,7 @@ let maxSelections = 3
 let currentDrawingParams= []
 let parentDrawingParams= []
 
+
 const paramRanges = {
 	numOfVehicles: { min: 1, max: 300 },
 	trackingIterations: { min: 100, max: 1500 },
@@ -37,6 +38,30 @@ const State = Object.freeze({
 });
 let state= State.DRAW
 
+
+
+// Enable or disable the Play button based on the state
+function togglePlayButton() {
+	if (state === State.DRAW || state === State.DRAWING) {
+	playButton.disabled = false;
+	} else {
+	playButton.disabled = true;
+	}
+}
+
+// Enable or disable the Play button based on the state
+function toggleDownloadButton() {
+	if (selectedCells.length == 1) {
+	downloadButton.disabled = false;
+	} else {
+	downloadButton.disabled = true;
+	}
+}
+
+
+
+    // Initialize the state and button status
+    
 function setup() {
 	createCanvas(windowWidth, windowHeight);
 	background(20,20,40);
@@ -44,6 +69,9 @@ function setup() {
 	// Define grid cell dimensions
 	cellWidth = width / gridCols;
 	cellHeight = height / gridRows;
+
+	togglePlayButton();
+	toggleDownloadButton();
 }
 
 function drawSpinner() {
@@ -75,33 +103,9 @@ function drawPaths() {
 	}
 	
 }
-function keyPressed() {
-    if (key === 'f' || key === 'F') {
-        renderDrawings();
-    }
-
-    if (key === 's' || key === 'S') {
-        for (let selectionIndex of selectedCells) {
-            selectionIndex = selectionIndex.index;
-            let currParams = currentDrawingParams[selectionIndex];
-            
-            // Log the raw compact JSON string
-            const rawJSON = JSON.stringify(currParams); // Compact JSON
-            console.log(rawJSON);
-
-            // Render the drawing for the logged params
-            let tempCanvas = createGraphics(windowWidth, windowHeight);
-            renderDrawing(tempCanvas, currParams);
-
-            // Save the rendered drawing as an image
-            const imageFilename = `rendered_drawing_${selectionIndex}.png`;
-            tempCanvas.save(imageFilename);
-
-        }
-    }
-}
 
 function mousePressed() {
+	
 	if (state === State.GRID) {
 		let index = 0;
 
@@ -137,6 +141,7 @@ function mousePressed() {
 		}
 		}
 	}
+	toggleDownloadButton()
 }
   
   
@@ -226,6 +231,7 @@ function draw() {
 
 async function renderDrawings() {
 	state = State.LOADING; // Set state to LOADING to show the spinner
+	togglePlayButton()
   
 	drawings = []; // Clear the previous drawings array
   
@@ -273,7 +279,7 @@ function renderDrawing(graphicsCanvas, drawingParams) {
 		let prominentAngle = calculateProminentOrientation(path);
 
 		// Get matching agents based on the prominent angle
-		let matchingAgents = new Set(determineClosestDirections(prominentAngle, drawingParams.filteredOrientations));
+		let matchingAgents = new Set(determineClosestDirections(prominentAngle, 4));
 
 
 		// Filter the drawing agent to retain only matching orientations

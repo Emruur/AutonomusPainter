@@ -21,7 +21,6 @@ let drawingParams = {
 	maxVehicleTrailLength: 50,
 	vehicleStrokeUp: 0.5,
 	vehicleStrokeDecay: 0.5,
-	filteredOrientations: 3,
 };
 
 const paramRanges = {
@@ -35,7 +34,6 @@ const paramRanges = {
 	maxVehicleTrailLength: { min: 10, max: 200, step: 10 }, // Larger increments for trail length
 	vehicleStrokeUp: { min: 0.1, max: 1, step: 0.1 }, // Small increments for smooth stroke changes
 	vehicleStrokeDecay: { min: 0.1, max: 1, step: 0.1 }, // Small increments for smooth decay
-	filteredOrientations: { min: 1, max: 4, step: 1 }, // Integer steps for discrete values
 };
   
 function randomInRange({ min, max, step }) {
@@ -70,19 +68,18 @@ function mouseReleased() {
   if (path.length > 0) paths.push(path);
 }
 
-function keyPressed() {
-  if (key === 'f' || key === 'F') {
-    state = State.FLOW
-    background(20, 20, 40);
-    renderDrawing();
-  }
+function play() {
+	state = State.FLOW
+	background(20, 20, 40);
+	renderDrawing();
 }
 
 function drawPaths() {
   noFill();
   stroke(200);
   strokeWeight(2);
-  for (let p of paths) {
+  let new_paths = [...paths, path];
+  for (let p of new_paths) {
     beginShape();
     for (let v of p) vertex(v.x, v.y);
     endShape();
@@ -106,7 +103,7 @@ function renderDrawing() {
         let prominentAngle = calculateProminentOrientation(path);
 
         // Get matching agents based on the prominent angle
-        let matchingAgents = new Set(determineClosestDirections(prominentAngle, drawingParams.filteredOrientations));
+        let matchingAgents = new Set(determineClosestDirections(prominentAngle, 4));
 
 
         // Filter the drawing agent to retain only matching orientations

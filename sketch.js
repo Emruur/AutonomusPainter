@@ -204,6 +204,16 @@ function drawWithAgent() {
     // Example agent and vehicle setup (replace with your actual data structure)
     let drawingAgent = drawingAgents[drawingAgents.length - 1];
 
+    // // Calculate prominent angle for the path
+    // let prominentAngle = calculateProminentOrientation(path);
+
+    // // Get matching agents based on the prominent angle
+    // let matchingAgents = new Set(determineClosestDirections(prominentAngle, drawingParams.filteredOrientations));
+
+
+    // // Filter the drawing agent to retain only matching orientations
+    // drawingAgent = filterDrawingAgent(drawingAgent, matchingAgents);
+
 	drawingAgent.attractFieldToPath(path)
 	for (let i = 0; i < drawingParams.trackingIterations; i++) {
 		drawingAgent.flow()
@@ -218,7 +228,6 @@ function draw(){
 
 	if (state !== State.FLOW){
 		if (isMousePressed()) {
-			console.log("AAA")
 			state= State.DRAWING
 			path.push(createVector(mouseX,mouseY))	
 		}
@@ -380,9 +389,159 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	}
 });
+function closeBrushModal() {
+    const brushModal = document.getElementById("brushModal");
+    if (brushModal) {
+        brushModal.style.display = "none";
+    }
+}
+function renderBrushList(category) {
+    // Find the category div dynamically by searching for its title
+    const categoryDiv = Array.from(document.querySelectorAll(".brush-category")).find((div) => {
+        const title = div.querySelector("h3");
+        return title && title.textContent === category;
+    });
+
+    if (!categoryDiv) {
+        console.error(`Category div not found for category: ${category}`);
+        return;
+    }
+
+    // Find the brush-list within the located category div
+    let brushList = categoryDiv.querySelector(".brush-list");
+    if (!brushList) {
+        // If the brush-list doesn't exist, create it
+        brushList = document.createElement("div");
+        brushList.className = "brush-list";
+        categoryDiv.appendChild(brushList);
+    } else {
+        // Clear existing brush list
+        brushList.innerHTML = "";
+    }
+
+    // Populate the brush list with buttons for each brush
+    Object.keys(brushes[category]).forEach((brushName) => {
+        const brushButton = document.createElement("button");
+        brushButton.textContent = brushName; // Use brush name as button text
+        brushButton.className = "brush-button";
+
+        // Add an image preview (if available)
+        if (brushImages[brushName]) {
+            brushButton.style.backgroundImage = `url(${brushImages[brushName].canvas.toDataURL()})`;
+            brushButton.style.backgroundSize = "cover";
+        }
+
+        // On brush selection
+        brushButton.addEventListener("click", () => {
+            drawingParams = brushes[category][brushName]; // Update drawing parameters
+            selectedBrushes[category] = brushes[category][brushName];
+            brushModal.style.display = "none"; // Close modal
+            console.log(`Selected brush: ${brushName} in category: ${category}`);
+        });
+
+        // Append the button to the brush list
+        brushList.appendChild(brushButton);
+    });
+}
+function createImportButton(category) {
+    const importButton = document.createElement("button");
+    importButton.className = "import-button";
+    importButton.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-upload" viewBox="0 0 16 16">
+            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+            <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708z"/>
+        </svg> Import
+    `;
+
+    importButton.addEventListener("click", () => {
+        const fileInput = document.createElement("input");
+        fileInput.type = "file";
+        fileInput.accept = "application/json";
+
+        // Add to DOM temporarily (required for some browsers)
+        document.body.appendChild(fileInput);
+
+        // Add event listener
+        fileInput.addEventListener("change", async () => {
+            console.log("File input triggered");
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            try {
+                // Read and parse the file content
+                const fileContent = await file.text();
+                const importedParams = JSON.parse(fileContent);
+
+                // Validate the structure of the imported file
+                const requiredKeys = [
+                    "numOfVehicles",
+                    "trackingIterations",
+                    "flowFieldResolution",
+                    "attractionRadius",
+                    "maxVehicleForce",
+                    "maxVehicleSpeed",
+                    "maxVehicleStroke",
+                    "maxVehicleTrailLength",
+                    "vehicleStrokeUp",
+                    "vehicleStrokeDecay",
+                    "filteredOrientations",
+                ];
+
+                const isValid = requiredKeys.every((key) => key in importedParams);
+
+                if (!isValid) {
+                    alert("Invalid JSON file structure. Please provide a valid drawingParams object.");
+                    return;
+                }
+
+                // Add the imported brush to the specified category
+                const brushName = `ImportedBrush-${Date.now()}`;
+                brushes[category][brushName] = importedParams;
+
+                // Refresh the modal to reflect the new brush
+                renderBrushList(category)
+            } catch (error) {
+                console.error("Error importing brush:", error);
+                alert("Failed to import brush. Please check the file format.");
+            } finally {
+                // Remove the input element after use
+                document.body.removeChild(fileInput);
+            }
+        });
+
+        // Trigger the file picker
+        fileInput.click();
+    });
+
+    return importButton;
+}
+function addCategoryButtons(categoryDiv, category) {
+    const buttonGroup = document.createElement("div");
+    buttonGroup.className = "button-group";
+
+    // Create the "Add" button
+    const addButton = document.createElement("button");
+    addButton.className = "add-button";
+    addButton.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus" viewBox="0 0 16 16">
+            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+        </svg> Add
+    `;
+    addButton.addEventListener("click", () => {
+        document.getElementById("brushCreationModal").style.display = "flex";
+        document.getElementById("brushModal").style.display= "none"
+    });
 
 
-document.addEventListener("DOMContentLoaded", () => {
+    // Create and append the import button
+    const importButton = createImportButton(category);
+
+    buttonGroup.appendChild(addButton);
+    buttonGroup.appendChild(importButton);
+    categoryDiv.appendChild(buttonGroup);
+}
+
+function setBrushes(){
     const openBrushModalButton = document.getElementById("openBrushModal");
     const brushModal = document.getElementById("brushModal");
     const closeBrushModalButton = brushModal.querySelector(".close");
@@ -426,10 +585,23 @@ document.addEventListener("DOMContentLoaded", () => {
 				categoryDiv.className = "brush-category";
 	
 				// Category Title
+                const horDiv = document.createElement("div");
+
+                // Apply flex styles
+                horDiv.style.display = "flex";
+                horDiv.style.justifyContent = "center"; // Center items horizontally
+                horDiv.style.alignItems = "center"; // Center items vertically
+                horDiv.style.flexDirection = "row"; // Default; ensures horizontal layout
+                horDiv.style.gap = "10px"; // Optional: Adds spacing between elements
+
 				const title = document.createElement("h3");
 				title.textContent = category;
 				title.className= "white";
-				categoryDiv.appendChild(title);
+				horDiv.appendChild(title);
+
+                addCategoryButtons(horDiv, category);
+
+                categoryDiv.appendChild(horDiv)
 	
 				// Brushes for the category
 				const brushList = document.createElement("div");
@@ -450,7 +622,7 @@ document.addEventListener("DOMContentLoaded", () => {
 					brushButton.addEventListener("click", () => {
 						drawingParams = brushes[category][brushName]; // Update drawing parameters
 						selectedBrushes[category]= brushes[category][brushName];
-						console.log(`Selected Brush: ${brushName} in Category: ${category}`);
+
 						brushModal.style.display = "none"; // Close modal
 					});
 	
@@ -465,8 +637,12 @@ document.addEventListener("DOMContentLoaded", () => {
 			spinner.style.display = "none";
 			brushContainer.style.display = "block";
 		}, 100); // Adjust the timeout as needed (or remove it for real-time loading)
+
 	}
-	
+
+}
+document.addEventListener("DOMContentLoaded", () => {
+    setBrushes()
 });
 
 
@@ -535,7 +711,6 @@ function recreateFromProjectData() {
         selectedPalette = projectData.palette;
         createColorBar(); // Update the color bar with the restored palette
         currColor = null; // Reset current color
-		console.log(selectedPalette)
     }
 
     // Restore the brushes
@@ -621,3 +796,23 @@ document.addEventListener("DOMContentLoaded", () => {
     // Example: Open the modal on page load
     openIntroModal();
 });
+
+function setupBrushCreationModal() {
+
+
+    const closeBrushCreationModal = brushCreationModal.querySelector(".close");
+
+    // Close the modal when clicking the close button
+    closeBrushCreationModal.addEventListener("click", () => {
+        brushCreationModal.style.display = "none";
+    });
+
+    // Close the modal when clicking outside the modal content
+    window.addEventListener("click", (event) => {
+        if (event.target === brushCreationModal) {
+            brushCreationModal.style.display = "none";
+        }
+    });
+}
+
+document.addEventListener("DOMContentLoaded", setupBrushCreationModal);

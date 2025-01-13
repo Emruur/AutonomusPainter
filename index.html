@@ -230,7 +230,9 @@
 			}
 
 			.intro-modal .page {
-				display: none;
+				padding: 20px;
+				overflow-y: auto; /* Allow scrolling for long content */
+				max-height: 70vh; /* Prevent page from being too tall */
 			}
 
 			.img-div{
@@ -261,6 +263,38 @@
 
 			.p-info{
 				max-width: 400px;
+			}
+
+			.creation-modes {
+				display: flex;
+				justify-content: space-around;
+				margin-top: 20px;
+			}
+
+			.creation-mode-button {
+				display: block;
+				background-color: #333;
+				color: white;
+				padding: 15px 20px;
+				font-size: 16px;
+				border: 2px solid #555;
+				border-radius: 8px;
+				cursor: pointer;
+				width: 40%;
+				text-align: center;
+				text-decoration: none; /* Remove underline from links */
+				transition: transform 0.3s, background-color 0.3s;
+			}
+
+			.creation-mode-button:hover {
+				transform: scale(1.05);
+				background-color: #555;
+			}
+
+			.creation-mode-button p {
+				margin-top: 10px;
+				font-size: 14px;
+				color: #ccc;
 			}
 
 
@@ -369,10 +403,42 @@
 							</strong>
 						</p>
 					</div>
+					<!-- Page 3 -->
+					<div class="page" id="page3" style="display: none;">
+						<h2>Adding New Brushes</h2>
+						<p>You can create and add your own custom brushes to the application! Here's how:</p>
+						<h3>Steps to Add a New Brush:</h3>
+						<ol>
+							<li>Click the <strong>brush dropdown</strong> in the top bar and select <em>"Add"</em> or <em>"Import"</em>.</li>
+							<li>For <strong>Adding:</strong> Create a brush you like and download as JSON</li>
+							<li>For <strong>Importing:</strong> Choose a JSON file with the brush parameters.</li>
+						</ol>
+						<h3>Why Create Custom Brushes?</h3>
+						<p>
+							Custom brushes allow you to tailor the drawing agents to your artistic style, enabling more personal and dynamic creations!
+						</p>
+						<p>Visit the <a href="https://github.com/Emruur/CreativeBrushes">GitHub page</a> for detailed documentation and examples.</p>
+					</div>
 				</div>
 				<div class="pagination-controls">
 					<button id="prevPage" disabled>&larr;</button>
 					<button id="nextPage">&rarr;</button>
+				</div>
+			</div>
+		</div>
+		<div id="brushCreationModal" class="modal">
+			<div class="modal-content">
+				<span class="close">&times;</span>
+				<h2 class="white">Create a New Brush</h2>
+				<div class="creation-modes">
+					<a href="tune.html" class="creation-mode-button">
+						Manally adjust
+						<p class="white">Define brush parameters manually for full control.</p>
+					</a>
+					<a href="search.html" class="creation-mode-button">
+						Evolutionary Search
+						<p class="white">Draw and choose the drawings you like</p>
+					</a>
 				</div>
 			</div>
 		</div>

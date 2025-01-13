@@ -64,38 +64,71 @@
     <div id="controls-container">
       <div id="sliders-container"></div>
       <div id="button-container">
+        <button id="play-button">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-play" viewBox="0 0 16 16">
+						<path d="M10.804 8 5 4.633v6.734zm.792-.696a.802.802 0 0 1 0 1.392l-6.363 3.692C4.713 12.69 4 12.345 4 11.692V4.308c0-.653.713-.998 1.233-.696z"/>
+					  </svg>
+        </button>
         <button id="randomize-sliders">Randomize Sliders</button>
         <button id="clear-canvas">Clear Canvas</button>
-        <button id="download-canvas">Download Canvas</button>
+        <button id="download-canvas">
+			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
+				<path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+				<path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
+			  </svg>
+		</button>
       </div>
     </div>
     <div id="canvas-container"></div>
     <script>
-      document.getElementById("randomize-sliders").addEventListener("click", () => {
-        
-        for (let key in paramRanges) {
-            let value= paramRanges[key]
-            const slider = document.querySelector(`#sliders-container input[data-key='${key}']`);
-            if (slider) {
-                const randomValue = randomInRange(value);
-                slider.value = randomValue;
-                drawingParams[key] = randomValue;
-            }
-        }
-        
-        renderDrawing();
-      });
+		document.getElementById("randomize-sliders").addEventListener("click", () => {
+			
+			for (let key in paramRanges) {
+				let value= paramRanges[key]
+				const slider = document.querySelector(`#sliders-container input[data-key='${key}']`);
+				if (slider) {
+					const randomValue = randomInRange(value);
+					slider.value = randomValue;
+					drawingParams[key] = randomValue;
+				}
+			}
+			
+			renderDrawing();
+		});
 
-      document.getElementById("clear-canvas").addEventListener("click", () => {
-        paths = [];
-        state= State.DRAW
-        renderDrawing();
-      });
+		document.getElementById("clear-canvas").addEventListener("click", () => {
+			paths = [];
+			state= State.DRAW
+			renderDrawing();
+		});
 
-      document.getElementById("download-canvas").addEventListener("click", () => {
-        saveCanvas("drawing", "png");
-        console.log(JSON.stringify(drawingParams, null, 2));
-      });
+      	document.getElementById("download-canvas").addEventListener("click", () => {
+			// saveCanvas("drawing", "png");
+			// console.log(JSON.stringify(drawingParams, null, 2));
+
+			//CHAT GPT DOWNLOAD THE DRAWING PARAMS as json file
+			// Convert the object to a JSON string
+			drawingParams["filteredOrientations"]= 4
+			const jsonString = JSON.stringify(drawingParams, null, 2); // Pretty print with 2-space indentation
+
+			// Create a Blob object from the JSON string
+			const blob = new Blob([jsonString], { type: "application/json" });
+
+			// Create a temporary anchor element
+			const a = document.createElement("a");
+			a.href = URL.createObjectURL(blob);
+			a.download = "drawingParams.json"; // Set the file name
+			a.style.display = "none";
+
+			// Append the anchor to the body, trigger the download, and then remove it
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+    	});
+
+		document.getElementById("play-button").addEventListener("click", () => {
+			play()
+		});
     </script>
   </body>
 </html>
