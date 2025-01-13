@@ -58,6 +58,71 @@
       button:hover {
         background: #777;
       }
+      .modal {
+  display: none; /* Hidden by default */
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent black background */
+}
+
+.modal-content {
+  background-color: #222; /* Matches the canvas-container background */
+  color: #f0f0f0; /* Light text for contrast */
+  margin: 10% auto;
+  padding: 20px;
+  border: 1px solid #555; /* Subtle border for definition */
+  width: 40%;
+  text-align: center;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.modal-content ul {
+  text-align: left;
+  margin: 20px 0;
+  padding-left: 20px;
+  list-style-type: disc;
+}
+
+.modal-content li {
+  margin: 10px 0;
+  line-height: 1.5;
+}
+
+.close-btn {
+  color: #bbb;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.close-btn:hover,
+.close-btn:focus {
+  color: #fff;
+}
+
+button#start-button {
+  background-color: #555;
+  color: #fff;
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+button#start-button:hover {
+  background-color: #777;
+  color: #ff9800;
+}
     </style>
   </head>
   <body>
@@ -80,6 +145,32 @@
       </div>
     </div>
     <div id="canvas-container"></div>
+
+    <div id="intro-modal" class="modal">
+      <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h2>Welcome to the Tuning Tool!</h2>
+        <p>
+          Here's how to use the tool to create and fine-tune your drawings:
+        </p>
+        <ul>
+          <li>Draw a sketch by dragging to mpuse</li>
+          <li>
+            <strong>Play:</strong> Starts or resumes the rendering process.
+          </li>
+          <li>
+            <strong>Randomize Sliders:</strong> Randomizes the values of the sliders to generate new drawing parameters. Also modify the parameters using the sliders
+          </li>
+          <li>
+            <strong>Clear Canvas:</strong> Removes all paths and clears the current drawing.
+          </li>
+          <li>
+            <strong>Download Canvas:</strong> Saves the current drawing parameters as a JSON file for later use.
+          </li>
+        </ul>
+        <button id="start-button">Get Started</button>
+      </div>
+    </div>
     <script>
 		document.getElementById("randomize-sliders").addEventListener("click", () => {
 			

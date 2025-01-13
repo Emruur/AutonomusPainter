@@ -158,3 +158,34 @@ function setupSliders() {
         slidersContainer.appendChild(sliderDiv);
     }
 }
+
+
+document.addEventListener("DOMContentLoaded", () => {
+  const modal = document.getElementById("intro-modal");
+  const closeModalButton = document.querySelector(".close-btn");
+  const startButton = document.getElementById("start-button");
+
+  // Function to show the modal
+  function showModal() {
+    modal.style.display = "block";
+  }
+
+  // Function to close the modal
+  function closeModal() {
+    modal.style.display = "none";
+  }
+
+  // Show the modal on page load
+  showModal();
+
+  // Close the modal when the close button or start button is clicked
+  closeModalButton.addEventListener("click", closeModal);
+  startButton.addEventListener("click", closeModal);
+
+  // Close the modal when the user clicks outside of the modal content
+  window.addEventListener("click", (event) => {
+    if (event.target === modal) {
+      closeModal();
+    }
+  });
+});
