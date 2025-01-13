@@ -98,9 +98,40 @@ So far a dozen parameters that alter the end drawing drastically have mentioned.
 | filteredOrientations     | 1    | 4    | 1     |
 
 ### Evolutionary Search
-search.js - search.html
+The **evolutionary search** in this project is inspired by natural selection. It helps optimize the parameters of autonomous drawing agents to create more creative and visually appealing drawings. The process involves steps like mutation, crossover, and selection to improve the parameters over time.
 
-GOKALP
+#### How It Works
+
+The evolutionary search process follows these steps:
+
+1. **Initialization**:  
+   - The process begins by generating random parameter sets. Each set defines characteristics like the number of agents, how long they track paths, and the resolution of the flow field.
+
+2. **Evaluation**:  
+   - Each parameter set is tested to see how well it performs. This could mean how visually appealing the drawing is or how well the agents follow the desired paths.
+
+3. **Selection**:  
+   - The best-performing parameter sets are chosen to move forward. These are the ones that produce the most effective or creative drawings.
+
+4. **Crossover**:  
+   - Two selected parameter sets are combined to create a new one. This mixes traits from both sets, creating new possibilities.
+
+5. **Mutation**:  
+   - Small random changes are applied to some parameters. This keeps the process flexible and helps the system try out new ideas.
+
+6. **Iteration**:  
+   - These steps are repeated over multiple rounds, or generations, until the system finds a parameter set that works well or reaches a stopping point.
+
+#### Why It’s Useful
+
+The evolutionary search is important because it:
+
+- Automatically adjusts parameters to create better and more unique drawings.  
+- Explores a wide range of parameter combinations without requiring manual tuning.  
+- Helps the agents interact effectively with flow fields, resulting in smoother and more creative outputs.  
+
+By using evolutionary search, the project achieves diverse and creative results while reducing the need for human intervention in fine-tuning parameters.
+
 
 ### Modifying the parameters manually
 tune.js tune.html
